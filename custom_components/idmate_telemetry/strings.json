@@ -14,7 +14,7 @@
         "title": "IDMate Telemetry — MQTT connection",
         "description": "Connect to the IDMate MQTT broker. The AES key is the same 64-character hex key as on the IDMate server (MQTT_AES_KEY).",
         "data": {
-          "device": "Device name (IDMate vehicle id, e.g. sirius)",
+          "device": "Device name (IDMate vehicle id, e.g. id7)",
           "host": "Broker host",
           "port": "Broker port",
           "username": "MQTT username",
@@ -65,7 +65,7 @@
           "charge_soc_entity": "State of charge (optional)"
         },
         "data_description": {
-          "url": "IDMate server, e.g. http://192.168.188.5:3004.",
+          "url": "IDMate server, e.g. http://192.168.1.50:3004.",
           "token": "The server's CHARGE_WEBHOOK_TOKEN.",
           "meter_entity": "A continuous (always-increasing) kWh meter — the wallbox/meter total.",
           "vehicle_plate": "Used when no vehicle entity is set, or when it is unavailable."
@@ -80,7 +80,7 @@
           "import_interval": "Poll interval (s)"
         },
         "data_description": {
-          "import_url": "Just type the server's LAN IP, e.g. 192.168.188.5 — http:// and :3004 are added automatically. Shown on the IDMate admin page.",
+          "import_url": "Just type the server's LAN IP, e.g. 192.168.1.50 — http:// and :3004 are added automatically. Shown on the IDMate admin page.",
           "import_token": "Copy it from IDMate → Admin → Home Assistant (the 'Read token' field).",
           "import_interval": "How often to refresh, in seconds. 30 is fine."
         }

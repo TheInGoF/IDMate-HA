@@ -60,7 +60,7 @@ meter).
 
 Connection:
 
-- **Device name** — the IDMate vehicle id (e.g. `sirius`). Publishes to `tele/<device>/data`.
+- **Device name** — the IDMate vehicle id (e.g. `id7`). Publishes to `tele/<device>/data`.
 - **Broker host / port** — your Mosquitto (default `8883`).
 - **Username / password** — the MQTT user for this vehicle.
 - **AES key** — the same 64-char hex key as the IDMate server's `MQTT_AES_KEY`.
