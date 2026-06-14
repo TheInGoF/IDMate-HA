@@ -1,0 +1,59 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "IDMate Telemetry — MQTT-Verbindung",
+        "description": "Verbindung zum IDMate-MQTT-Broker. Der AES-Key ist derselbe 64-stellige Hex-Key wie auf dem IDMate-Server (MQTT_AES_KEY).",
+        "data": {
+          "device": "Gerätename (IDMate-Fahrzeug-ID, z.B. sirius)",
+          "host": "Broker-Host",
+          "port": "Broker-Port",
+          "username": "MQTT-Benutzer",
+          "password": "MQTT-Passwort",
+          "aes_key": "AES-Key (64 Hex-Zeichen)",
+          "tls": "TLS verwenden",
+          "tls_insecure": "Selbstsigniertes Zertifikat akzeptieren",
+          "interval": "Sendeintervall (Sekunden)"
+        }
+      },
+      "entities": {
+        "title": "IDMate Telemetry — Entity-Zuordnung",
+        "description": "Quell-Entities wählen. SoC und Geschwindigkeit sind Pflicht, der Rest optional. Einheiten für Reichweite/Leistung/Kilometerstand werden automatisch erkannt (m/km/mi, W/kW).",
+        "data": {
+          "soc_entity": "Ladezustand (%)",
+          "speed_entity": "Geschwindigkeit",
+          "location_entity": "Standort (device_tracker)",
+          "odometer_entity": "Kilometerstand",
+          "range_entity": "Restreichweite",
+          "power_entity": "Leistung",
+          "charging_entity": "Lädt (binary_sensor)"
+        }
+      }
+    },
+    "error": {
+      "aes_key_length": "Der AES-Key muss exakt 64 Hex-Zeichen lang sein (32 Byte).",
+      "aes_key_hex": "Der AES-Key darf nur Hex-Zeichen enthalten (0-9, a-f)."
+    },
+    "abort": {
+      "already_configured": "Dieses Gerät ist bereits konfiguriert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "IDMate Telemetry — Optionen",
+        "description": "Sendeintervall und Entity-Zuordnung anpassen.",
+        "data": {
+          "soc_entity": "Ladezustand (%)",
+          "speed_entity": "Geschwindigkeit",
+          "location_entity": "Standort (device_tracker)",
+          "odometer_entity": "Kilometerstand",
+          "range_entity": "Restreichweite",
+          "power_entity": "Leistung",
+          "charging_entity": "Lädt (binary_sensor)",
+          "interval": "Sendeintervall (Sekunden)"
+        }
+      }
+    }
+  }
+}

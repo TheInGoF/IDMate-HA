@@ -1,0 +1,59 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "IDMate Telemetry — MQTT connection",
+        "description": "Connect to the IDMate MQTT broker. The AES key is the same 64-character hex key as on the IDMate server (MQTT_AES_KEY).",
+        "data": {
+          "device": "Device name (IDMate vehicle id, e.g. sirius)",
+          "host": "Broker host",
+          "port": "Broker port",
+          "username": "MQTT username",
+          "password": "MQTT password",
+          "aes_key": "AES key (64 hex chars)",
+          "tls": "Use TLS",
+          "tls_insecure": "Accept self-signed certificate",
+          "interval": "Send interval (seconds)"
+        }
+      },
+      "entities": {
+        "title": "IDMate Telemetry — entity mapping",
+        "description": "Pick the source entities. SoC and speed are required; the rest are optional. Range/power/odometer units are auto-detected (m/km/mi, W/kW).",
+        "data": {
+          "soc_entity": "State of charge (%)",
+          "speed_entity": "Speed",
+          "location_entity": "Location (device_tracker)",
+          "odometer_entity": "Odometer",
+          "range_entity": "Remaining range",
+          "power_entity": "Power",
+          "charging_entity": "Charging (binary_sensor)"
+        }
+      }
+    },
+    "error": {
+      "aes_key_length": "The AES key must be exactly 64 hex characters (32 bytes).",
+      "aes_key_hex": "The AES key must contain only hex characters (0-9, a-f)."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "IDMate Telemetry — options",
+        "description": "Adjust the send interval and entity mapping.",
+        "data": {
+          "soc_entity": "State of charge (%)",
+          "speed_entity": "Speed",
+          "location_entity": "Location (device_tracker)",
+          "odometer_entity": "Odometer",
+          "range_entity": "Remaining range",
+          "power_entity": "Power",
+          "charging_entity": "Charging (binary_sensor)",
+          "interval": "Send interval (seconds)"
+        }
+      }
+    }
+  }
+}
