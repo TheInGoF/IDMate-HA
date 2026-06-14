@@ -51,10 +51,14 @@ class IdmateChargeTracker:
     async def async_start(self) -> None:
         stored = await self._store.async_load()
         if stored and stored.get("last_meter") is not None:
+            # Restore the anchor instead of re-anchoring: if HA was down across
+            # one or more ticks, the next tick reports the full difference since
+            # this value (e.g. a 30-min window). Nothing is lost — a monotonic
+            # meter makes the diff exactly the real consumption.
             self._last_meter = float(stored["last_meter"])
         else:
-            # First run: anchor to the current meter so we never bill the whole
-            # lifetime total as one window.
+            # First run only: anchor to the current meter so we never bill the
+            # whole lifetime total as one window.
             self._last_meter = self._num(self._cfg.get(CONF_METER))
             await self._save()
 

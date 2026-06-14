@@ -88,10 +88,20 @@ convention: a set bit means *true*; *false* simply omits the field.
 
 Every wall-clock quarter hour (`:00/:15/:30/:45`) the integration reads the
 meter, computes the consumption since the last tick and POSTs it. Readings with
-`kwh <= 0` or an empty/`free` vehicle are skipped by the server. The last meter
-value is persisted, so a restart never emits phantom consumption. No
+`kwh <= 0` or an empty/`free` vehicle are skipped by the server. No
 `input_number` helper or quarter-hour-reset sensor is needed — the integration
 keeps that state itself.
+
+**No consumption is ever lost across restarts.** The last meter value is
+persisted on every tick and *restored* (not re-anchored) on startup, so if Home
+Assistant is down across a tick the next tick simply reports the larger
+difference (e.g. a 30-minute window). With a monotonic all-time meter, the diff
+is always exactly the real consumption since the last successful reading. If the
+meter is still `unavailable` at a tick (entity not loaded yet after a restart),
+that tick is skipped without touching the anchor, so the next one catches up. A
+decreasing meter (counter reset) is skipped. The anchor is set to the current
+meter only on the very first run, to avoid billing the lifetime total as one
+window.
 
 ## Requirements
 

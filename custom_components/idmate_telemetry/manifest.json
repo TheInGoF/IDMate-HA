@@ -1,12 +1,12 @@
 {
   "domain": "idmate_telemetry",
   "name": "IDMate Telemetry",
-  "version": "1.1.0",
+  "codeowners": ["@TheInGoF"],
   "config_flow": true,
   "documentation": "https://github.com/TheInGoF/IDMate-HA",
-  "issue_tracker": "https://github.com/TheInGoF/IDMate-HA/issues",
-  "codeowners": ["@TheInGoF"],
-  "iot_class": "local_push",
   "integration_type": "service",
-  "requirements": []
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/TheInGoF/IDMate-HA/issues",
+  "requirements": [],
+  "version": "1.1.1"
 }
