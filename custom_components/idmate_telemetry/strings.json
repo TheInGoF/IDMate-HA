@@ -2,6 +2,14 @@
   "config": {
     "step": {
       "user": {
+        "title": "IDMate",
+        "description": "What do you want to set up?",
+        "menu_options": {
+          "telemetry": "Vehicle telemetry (encrypted MQTT)",
+          "charge": "Charge tracker (15-min meter readings via HTTP)"
+        }
+      },
+      "telemetry": {
         "title": "IDMate Telemetry — MQTT connection",
         "description": "Connect to the IDMate MQTT broker. The AES key is the same 64-character hex key as on the IDMate server (MQTT_AES_KEY).",
         "data": {
@@ -28,6 +36,22 @@
           "power_entity": "Power",
           "charging_entity": "Charging (binary_sensor)"
         }
+      },
+      "charge": {
+        "title": "IDMate Charge Tracker",
+        "description": "Every quarter hour the consumption of the energy meter is posted to IDMate, which builds charge sessions automatically. Meter is required; price/base-fee are optional €/kWh entities (e.g. a Tibber/EPEX template sensor).",
+        "data": {
+          "name": "Name (unique, e.g. wallbox)",
+          "url": "IDMate base URL (e.g. http://192.168.1.5:3004)",
+          "token": "Webhook token (CHARGE_WEBHOOK_TOKEN)",
+          "meter_entity": "Energy meter (kWh, continuous)",
+          "vehicle_entity": "Vehicle plate (entity, optional)",
+          "vehicle_plate": "Vehicle plate (fixed fallback)",
+          "price_entity": "Price (€/kWh, optional)",
+          "base_fee_entity": "Base fee per interval (€/kWh, optional)",
+          "charge_odometer_entity": "Odometer (optional)",
+          "charge_soc_entity": "State of charge (optional)"
+        }
       }
     },
     "error": {
@@ -35,14 +59,14 @@
       "aes_key_hex": "The AES key must contain only hex characters (0-9, a-f)."
     },
     "abort": {
-      "already_configured": "This device is already configured."
+      "already_configured": "This entry is already configured."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "IDMate Telemetry — options",
-        "description": "Adjust the send interval and entity mapping.",
+        "title": "IDMate — options",
+        "description": "Adjust the mapping (and, for telemetry, the send interval).",
         "data": {
           "soc_entity": "State of charge (%)",
           "speed_entity": "Speed",
@@ -51,7 +75,17 @@
           "range_entity": "Remaining range",
           "power_entity": "Power",
           "charging_entity": "Charging (binary_sensor)",
-          "interval": "Send interval (seconds)"
+          "interval": "Send interval (seconds)",
+          "name": "Name (unique, e.g. wallbox)",
+          "url": "IDMate base URL",
+          "token": "Webhook token",
+          "meter_entity": "Energy meter (kWh, continuous)",
+          "vehicle_entity": "Vehicle plate (entity, optional)",
+          "vehicle_plate": "Vehicle plate (fixed fallback)",
+          "price_entity": "Price (€/kWh, optional)",
+          "base_fee_entity": "Base fee per interval (€/kWh, optional)",
+          "charge_odometer_entity": "Odometer (optional)",
+          "charge_soc_entity": "State of charge (optional)"
         }
       }
     }

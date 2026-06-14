@@ -1,15 +1,21 @@
 # IDMate Telemetry — Home Assistant Integration
 
-Send vehicle telemetry from Home Assistant to [IDMate](https://github.com/TheInGoF/IDMate)
-as **AES-256-CBC encrypted MQTT telegrams** — byte-identical to the ESP32
-firmware ([IDTelemetry](https://github.com/TheInGoF)). Your data arrives at the
-IDMate server "from outside" over an authenticated, TLS-encrypted MQTT
-connection, exactly like any other vehicle. The IDMate server needs **no
-changes**.
+Bridge Home Assistant to [IDMate](https://github.com/TheInGoF/IDMate). The
+integration offers two kinds of config entry (pick from a menu when adding it):
+
+1. **Vehicle telemetry (MQTT)** — sends live vehicle data as **AES-256-CBC
+   encrypted MQTT telegrams**, byte-identical to the ESP32 firmware
+   ([IDTelemetry](https://github.com/TheInGoF)). Your data arrives at the IDMate
+   server "from outside" over an authenticated, TLS-encrypted MQTT connection,
+   exactly like any other vehicle. The IDMate server needs **no changes**.
+2. **Charge tracker (HTTP)** — posts 15-minute energy-meter readings to the
+   IDMate webhook (`/api/charge/reading`); IDMate builds charge sessions and
+   costs automatically.
 
 Use this when you already have a vehicle in Home Assistant (Tesla via TeslaMate,
 the official Tesla integration, a Volkswagen/ID. integration, etc.) and want to
-feed it into IDMate without writing directly to InfluxDB.
+feed it into IDMate without writing directly to InfluxDB or maintaining
+hand-written automations.
 
 ## Why MQTT instead of a direct InfluxDB write?
 
@@ -42,9 +48,14 @@ and restart.
 
 ## Configuration
 
-Set up via the UI (one config entry per vehicle):
+When you add the integration, a menu lets you choose **Vehicle telemetry** or
+**Charge tracker**. Add as many entries as you like (one per vehicle / per
+meter).
 
-**Connection**
+### Vehicle telemetry (MQTT)
+
+Connection:
+
 - **Device name** — the IDMate vehicle id (e.g. `sirius`). Publishes to `tele/<device>/data`.
 - **Broker host / port** — your Mosquitto (default `8883`).
 - **Username / password** — the MQTT user for this vehicle.
@@ -52,19 +63,35 @@ Set up via the UI (one config entry per vehicle):
 - **TLS / accept self-signed** — enable both for a self-signed broker cert.
 - **Send interval** — default 60 s.
 
-**Entity mapping** (SoC + speed required, rest optional)
+Entity mapping (SoC + speed required, rest optional):
+
 - State of charge (%), speed, location (`device_tracker`), odometer, remaining
   range, power, charging (`binary_sensor`).
 - Units for range / power / odometer are auto-detected from
   `unit_of_measurement` (`m`/`km`/`mi`, `W`/`kW`, `mph`).
 
-## Behaviour
+A telegram is sent every interval **only while driving or charging** (valid SoC
+and (speed > 0 or charging)). Parked-and-not-charging sends nothing, so the car
+is allowed to sleep. Boolean fields (charging / parked / DC) follow the firmware
+convention: a set bit means *true*; *false* simply omits the field.
 
-- A telegram is sent every interval **only while driving or charging** (valid
-  SoC and (speed > 0 or charging)). Parked-and-not-charging sends nothing, so
-  the car is allowed to sleep.
-- Boolean fields (charging / parked / DC) follow the firmware convention: a set
-  bit means *true*; *false* simply omits the field.
+### Charge tracker (HTTP)
+
+- **Name** — unique label for this meter (e.g. `wallbox`).
+- **IDMate base URL** — e.g. `http://192.168.1.5:3004`.
+- **Webhook token** — the server's `CHARGE_WEBHOOK_TOKEN` (sent as `Bearer`).
+- **Energy meter** — a continuous kWh sensor (the wallbox / meter total). Required.
+- **Vehicle** — either an entity that holds the plate, or a fixed fallback plate.
+- **Price / base fee** — optional €/kWh entities (e.g. a Tibber/EPEX template
+  sensor). Forwarded verbatim as `tibber_price` / `tibber_grundgebuehr`.
+- **Odometer / SoC** — optional.
+
+Every wall-clock quarter hour (`:00/:15/:30/:45`) the integration reads the
+meter, computes the consumption since the last tick and POSTs it. Readings with
+`kwh <= 0` or an empty/`free` vehicle are skipped by the server. The last meter
+value is persisted, so a restart never emits phantom consumption. No
+`input_number` helper or quarter-hour-reset sensor is needed — the integration
+keeps that state itself.
 
 ## Requirements
 

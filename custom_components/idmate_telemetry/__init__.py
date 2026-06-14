@@ -1,4 +1,4 @@
-"""IDMate Telemetry: push HA vehicle data to IDMate as encrypted MQTT telegrams."""
+"""IDMate: push HA vehicle telemetry (MQTT) and charge readings (HTTP) to IDMate."""
 
 from __future__ import annotations
 
@@ -9,7 +9,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
-from .const import CONF_INTERVAL, DEFAULT_INTERVAL, DOMAIN
+from .charge import IdmateChargeTracker
+from .const import (
+    CONF_INTERVAL,
+    CONF_MODE,
+    DEFAULT_INTERVAL,
+    DOMAIN,
+    MODE_CHARGE,
+)
 from .telemetry import IdmateTelemetry
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,8 +28,16 @@ def _merged_config(entry: ConfigEntry) -> dict:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up one IDMate Telemetry config entry (one vehicle)."""
+    """Set up one config entry — telemetry (MQTT) or charge tracker (HTTP)."""
     cfg = _merged_config(entry)
+
+    if cfg.get(CONF_MODE) == MODE_CHARGE:
+        tracker = IdmateChargeTracker(hass, entry, cfg)
+        await tracker.async_start()
+        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = ("charge", tracker, None)
+        entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
+        return True
+
     telem = IdmateTelemetry(hass, cfg)
     await hass.async_add_executor_job(telem.start)
 
@@ -34,8 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await hass.async_add_executor_job(telem.tick)
 
     unsub = async_track_time_interval(hass, _on_interval, interval)
-
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = (telem, unsub)
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = ("telemetry", telem, unsub)
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
     return True
 
@@ -43,10 +57,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Tear down a config entry."""
     data = hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
-    if data is not None:
-        telem, unsub = data
+    if data is None:
+        return True
+    kind, obj, unsub = data
+    if unsub is not None:
         unsub()
-        await hass.async_add_executor_job(telem.stop)
+    if kind == "charge":
+        await obj.async_stop()
+    else:
+        await hass.async_add_executor_job(obj.stop)
     return True
 
 
