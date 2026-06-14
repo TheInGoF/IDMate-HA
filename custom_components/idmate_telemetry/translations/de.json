@@ -12,15 +12,15 @@
       },
       "telemetry": {
         "title": "IDMate Telemetry — MQTT-Verbindung",
-        "description": "Verbindung zum IDMate-MQTT-Broker. Der AES-Key ist derselbe 64-stellige Hex-Key wie auf dem IDMate-Server (MQTT_AES_KEY).",
+        "description": "Verbindung zum IDMate-MQTT-Broker im LAN. Wie die ESP32-Sticks ist der Broker plain (Port 1883) und anonym — die Sicherheit ist der AES-Key. Kein TLS, kein Benutzer/Passwort und keine Freigabe nach außen nötig.",
         "data": {
           "device": "Gerätename (IDMate-Fahrzeug-ID, z.B. id7)",
-          "host": "Broker-Host",
+          "host": "Broker-LAN-IP",
           "port": "Broker-Port",
-          "username": "MQTT-Benutzer",
-          "password": "MQTT-Passwort",
+          "username": "MQTT-Benutzer (meist leer)",
+          "password": "MQTT-Passwort (meist leer)",
           "aes_key": "AES-Key (64 Hex-Zeichen)",
-          "tls": "TLS verwenden",
+          "tls": "TLS verwenden (meist aus)",
           "tls_insecure": "Selbstsigniertes Zertifikat akzeptieren",
           "interval": "Prüfintervall / Mindestabstand zwischen Sendungen (s)",
           "max_interval": "Heartbeat: max. Abstand während aktiv (s)",
@@ -29,11 +29,13 @@
         },
         "data_description": {
           "device": "Muss der Fahrzeug-ID in IDMate entsprechen (sendet an tele/<device>/data).",
-          "host": "LAN-IP/Host des MQTT-Brokers, von Home Assistant erreichbar.",
-          "username": "Leer lassen, wenn der Broker anonyme Verbindungen erlaubt.",
-          "password": "Leer lassen bei anonymem Broker.",
-          "aes_key": "Exakt derselbe 64-stellige Key wie MQTT_AES_KEY am IDMate-Server.",
-          "tls_insecure": "Bei selbstsigniertem Broker-Zertifikat anlassen."
+          "host": "Die LAN-IP des Brokers — bleibt intern, keine Freigabe ins Internet nötig.",
+          "port": "1883 (plain) — IDMate-Broker-Modell. Nur für einen TLS-Broker ändern.",
+          "username": "Leer lassen — IDMates Broker ist anonym; die Sicherheit ist der AES-Key.",
+          "password": "Leer lassen (anonymer Broker).",
+          "aes_key": "Exakt derselbe 64-stellige Key wie MQTT_AES_KEY am IDMate-Server — er authentifiziert die Daten.",
+          "tls": "Aus — IDMate nutzt einen plain LAN-Broker. Nur für einen gehärteten TLS-Broker an.",
+          "tls_insecure": "Nur relevant, wenn TLS an ist (selbstsigniertes Zertifikat)."
         }
       },
       "entities": {

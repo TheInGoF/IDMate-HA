@@ -12,15 +12,15 @@
       },
       "telemetry": {
         "title": "IDMate Telemetry — MQTT connection",
-        "description": "Connect to the IDMate MQTT broker. The AES key is the same 64-character hex key as on the IDMate server (MQTT_AES_KEY).",
+        "description": "Connect to the IDMate MQTT broker on your LAN. Like the ESP32 sticks, the broker is plain (port 1883) and anonymous — the AES key is the security, so no TLS, no username/password and no external exposure are needed.",
         "data": {
           "device": "Device name (IDMate vehicle id, e.g. id7)",
-          "host": "Broker host",
+          "host": "Broker LAN IP",
           "port": "Broker port",
-          "username": "MQTT username",
-          "password": "MQTT password",
+          "username": "MQTT username (usually empty)",
+          "password": "MQTT password (usually empty)",
           "aes_key": "AES key (64 hex chars)",
-          "tls": "Use TLS",
+          "tls": "Use TLS (usually off)",
           "tls_insecure": "Accept self-signed certificate",
           "interval": "Evaluation interval / minimum gap between sends (s)",
           "max_interval": "Heartbeat: max gap while active (s)",
@@ -29,11 +29,13 @@
         },
         "data_description": {
           "device": "Must match the vehicle id in IDMate (publishes to tele/<device>/data).",
-          "host": "The MQTT broker's LAN IP/host reachable from Home Assistant.",
-          "username": "Leave empty if your broker allows anonymous connections.",
-          "password": "Leave empty for an anonymous broker.",
-          "aes_key": "The exact same 64-char key as the IDMate server's MQTT_AES_KEY.",
-          "tls_insecure": "Keep on for a self-signed broker certificate."
+          "host": "The broker's LAN IP — it stays internal, no need to expose it to the internet.",
+          "port": "1883 (plain) — IDMate's broker model. Only change it for a TLS broker.",
+          "username": "Leave empty — IDMate's broker is anonymous; the AES key is the security.",
+          "password": "Leave empty (anonymous broker).",
+          "aes_key": "The exact same 64-char key as the IDMate server's MQTT_AES_KEY — this authenticates the data.",
+          "tls": "Off — IDMate uses a plain LAN broker. Turn on only for a hardened TLS broker.",
+          "tls_insecure": "Only relevant if TLS is on (self-signed certificate)."
         }
       },
       "entities": {

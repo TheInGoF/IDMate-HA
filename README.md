@@ -6,9 +6,10 @@ and you can add as many as you like:
 
 1. **Vehicle telemetry (MQTT)** — sends live vehicle data as **AES-256-CBC
    encrypted MQTT telegrams**, byte-identical to the ESP32 firmware
-   ([IDTelemetry](https://github.com/TheInGoF)). Your data arrives at the IDMate
-   server "from outside" over an authenticated, TLS-encrypted MQTT connection,
-   exactly like any other vehicle. The IDMate server needs **no changes**.
+   ([IDTelemetry](https://github.com/TheInGoF)). HA publishes to the IDMate
+   broker on the **LAN** — plain (port 1883), anonymous, exactly like the
+   sticks; the AES key is the security. The broker stays internal (no external
+   exposure) and the IDMate server needs **no changes**.
 2. **Charge tracker (HTTP)** — posts 15-minute energy-meter readings to the
    IDMate webhook (`/api/charge/reading`); IDMate builds charge sessions and
    costs automatically.
@@ -23,20 +24,19 @@ hand-written automations — or to bring IDMate's own logged vehicles back into 
 
 ## Why MQTT instead of a direct InfluxDB write?
 
-- **No InfluxDB token in Home Assistant.** HA only talks to the MQTT broker,
-  authenticated per vehicle.
-- **End-to-end app-layer encryption.** Each telegram is AES-256-CBC encrypted
-  with a key the broker never sees — so even an untrusted broker can't read or
-  forge your data.
+- **No InfluxDB token in Home Assistant.** HA only talks to the broker on the LAN.
+- **App-layer encryption is the security.** Each telegram is AES-256-CBC
+  encrypted with a key the broker never sees — so the broker needs neither TLS
+  nor authentication, just like the ESP32 sticks. The broker stays internal.
 - **Same path as the hardware loggers.** One ingestion path on the server side.
 
 ## Security model
 
-The repository contains **no secrets**. Broker host, username, password and the
-AES key are entered in the Home Assistant UI and stored encrypted in HA's
-`.storage`. Security comes from TLS + MQTT auth + the per-telegram AES layer —
-not from keeping the source private. A public repo is therefore the correct and
-secure choice (and lets HACS install it without a GitHub token).
+The repository contains **no secrets**. Broker IP and the AES key are entered in
+the Home Assistant UI and stored encrypted in HA's `.storage`. Security comes
+from the per-telegram **AES** layer — the broker is plain/anonymous and not
+exposed externally, exactly as the firmware uses it. A public repo is therefore
+the correct and secure choice (and lets HACS install it without a GitHub token).
 
 ## Installation (HACS)
 
@@ -61,11 +61,12 @@ meter).
 Connection:
 
 - **Device name** — the IDMate vehicle id (e.g. `id7`). Publishes to `tele/<device>/data`.
-- **Broker host / port** — your Mosquitto (default `8883`).
-- **Username / password** — the MQTT user for this vehicle.
-- **AES key** — the same 64-char hex key as the IDMate server's `MQTT_AES_KEY`.
-- **TLS / accept self-signed** — enable both for a self-signed broker cert.
+- **Broker LAN IP** — your Mosquitto on the LAN, plain port `1883` (default).
+- **AES key** — the same 64-char hex key as the IDMate server's `MQTT_AES_KEY`. This is the security.
+- **Username / password / TLS** — leave empty / off (IDMate's broker is plain and anonymous). Only set them for a hardened TLS broker.
 - **Send interval** — default 60 s.
+
+In short: **broker IP + AES key** is all you normally enter.
 
 Entity mapping (SoC + speed required, rest optional):
 

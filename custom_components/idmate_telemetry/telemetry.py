@@ -149,7 +149,7 @@ class IdmateTelemetry:
         )
         if self._cfg.get("username"):
             client.username_pw_set(self._cfg["username"], self._cfg.get("password", ""))
-        if self._cfg.get("tls", True):
+        if self._cfg.get("tls", False):
             if self._cfg.get("tls_insecure", True):
                 client.tls_set(cert_reqs=ssl.CERT_NONE)
                 client.tls_insecure_set(True)

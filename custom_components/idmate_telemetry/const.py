@@ -50,12 +50,15 @@ CONF_IMPORT_INTERVAL = "import_interval"
 
 # ── Defaults ─────────────────────────────────────────────────
 DEFAULT_IMPORT_INTERVAL = 30  # poll interval for imported vehicles (s)
-DEFAULT_PORT = 8883
+# IDMate's MQTT model = plain broker + AES-encrypted payload (the ESP32 stick
+# connects to port 1883 with no user/pass; security is the AES key). Defaults
+# mirror that: plain, anonymous. TLS/auth stay available for hardened brokers.
+DEFAULT_PORT = 1883
 DEFAULT_INTERVAL = 10        # evaluation tick / throttle floor (s)
 DEFAULT_MAX_INTERVAL = 60    # heartbeat while active (s)
 DEFAULT_MIN_DISTANCE = 100   # distance trigger (m) — mirrors the firmware
 DEFAULT_MIN_HEADING = 8      # bearing-change trigger (deg) — curve approximation
-DEFAULT_TLS = True
+DEFAULT_TLS = False
 DEFAULT_TLS_INSECURE = True
 
 # Binary telegram protocol version (v2: kw widened to u32).
