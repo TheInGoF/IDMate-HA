@@ -48,6 +48,8 @@
           "odometer_entity": "Kilometerstand",
           "range_entity": "Restreichweite",
           "power_entity": "Leistung",
+          "ext_temp_entity": "Außentemperatur",
+          "heading_entity": "Fahrtrichtung (Heading)",
           "charging_entity": "Lädt (binary_sensor)"
         }
       },
@@ -111,6 +113,8 @@
           "odometer_entity": "Kilometerstand",
           "range_entity": "Restreichweite",
           "power_entity": "Leistung",
+          "ext_temp_entity": "Außentemperatur",
+          "heading_entity": "Fahrtrichtung (Heading)",
           "charging_entity": "Lädt (binary_sensor)",
           "interval": "Prüfintervall / Mindestabstand zwischen Sendungen (s)",
           "max_interval": "Heartbeat: max. Abstand während aktiv (s)",

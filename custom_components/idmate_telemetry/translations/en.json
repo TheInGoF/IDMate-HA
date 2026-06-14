@@ -48,6 +48,8 @@
           "odometer_entity": "Odometer",
           "range_entity": "Remaining range",
           "power_entity": "Power",
+          "ext_temp_entity": "Outside temperature",
+          "heading_entity": "Heading",
           "charging_entity": "Charging (binary_sensor)"
         }
       },
@@ -111,6 +113,8 @@
           "odometer_entity": "Odometer",
           "range_entity": "Remaining range",
           "power_entity": "Power",
+          "ext_temp_entity": "Outside temperature",
+          "heading_entity": "Heading",
           "charging_entity": "Charging (binary_sensor)",
           "interval": "Evaluation interval / minimum gap between sends (s)",
           "max_interval": "Heartbeat: max gap while active (s)",

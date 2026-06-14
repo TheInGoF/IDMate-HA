@@ -201,8 +201,9 @@ class IdmateTelemetry:
         if reason is None:
             return
 
-        # Enrich with computed heading while moving (we have no heading sensor).
-        if bearing is not None and values.get("v", 0) > 0 and dist and dist > 5:
+        # Enrich with a heading computed from GPS movement — only if no heading
+        # entity was mapped (that one already set "hd" in _collect_values).
+        if "hd" not in values and bearing is not None and values.get("v", 0) > 0 and dist and dist > 5:
             values["hd"] = int(round(bearing)) % 360
 
         telegram = build_telegram(self._aes_key, values, int(now))
@@ -316,6 +317,14 @@ class IdmateTelemetry:
         power = self._num(cfg.get("power_entity"))
         if power is not None and power != 0:
             values["p"] = self._to_kw(power, self._unit(cfg.get("power_entity")))
+
+        ext_temp = self._num(cfg.get("ext_temp_entity"))
+        if ext_temp is not None:
+            values["et"] = ext_temp  # build_telegram packs it as a signed byte °C
+
+        heading = self._num(cfg.get("heading_entity"))
+        if heading is not None:
+            values["hd"] = int(round(heading)) % 360  # explicit beats computed
 
         return values
 

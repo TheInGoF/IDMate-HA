@@ -24,6 +24,8 @@ from .const import (
     CONF_CHARGE_SOC,
     CONF_CHARGING,
     CONF_DEVICE,
+    CONF_EXT_TEMP,
+    CONF_HEADING,
     CONF_HOST,
     CONF_IMPORT_INTERVAL,
     CONF_IMPORT_TOKEN,
@@ -149,6 +151,8 @@ def _entities_schema(d: dict[str, Any]) -> vol.Schema:
     _opt(fields, CONF_ODOMETER, _entity("sensor"), d)
     _opt(fields, CONF_RANGE, _entity("sensor"), d)
     _opt(fields, CONF_POWER, _entity("sensor"), d)
+    _opt(fields, CONF_EXT_TEMP, _entity("sensor"), d)
+    _opt(fields, CONF_HEADING, _entity("sensor"), d)
     _opt(fields, CONF_CHARGING, _entity("binary_sensor"), d)
     return vol.Schema(fields)
 
