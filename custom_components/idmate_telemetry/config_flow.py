@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import aiohttp
 import voluptuous as vol
 
 from homeassistant.config_entries import (
@@ -14,6 +15,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers import selector
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
     CONF_AES_KEY,
@@ -23,6 +25,9 @@ from .const import (
     CONF_CHARGING,
     CONF_DEVICE,
     CONF_HOST,
+    CONF_IMPORT_INTERVAL,
+    CONF_IMPORT_TOKEN,
+    CONF_IMPORT_URL,
     CONF_INTERVAL,
     CONF_LOCATION,
     CONF_MAX_INTERVAL,
@@ -46,6 +51,7 @@ from .const import (
     CONF_USERNAME,
     CONF_VEHICLE_ENTITY,
     CONF_VEHICLE_PLATE,
+    DEFAULT_IMPORT_INTERVAL,
     DEFAULT_INTERVAL,
     DEFAULT_MAX_INTERVAL,
     DEFAULT_MIN_DISTANCE,
@@ -55,8 +61,11 @@ from .const import (
     DEFAULT_TLS_INSECURE,
     DOMAIN,
     MODE_CHARGE,
+    MODE_IMPORT,
     MODE_TELEMETRY,
 )
+
+MENU_IMPORT = "import_vehicles"  # menu/step id (avoid HA's reserved 'import' step)
 
 _TEXT = selector.TextSelector()
 _PASSWORD = selector.TextSelector(
@@ -162,6 +171,19 @@ def _charge_schema(d: dict[str, Any]) -> vol.Schema:
     return vol.Schema(fields)
 
 
+def _import_schema(d: dict[str, Any]) -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Required(CONF_IMPORT_URL, default=d.get(CONF_IMPORT_URL, "")): _TEXT,
+            vol.Required(CONF_IMPORT_TOKEN, default=d.get(CONF_IMPORT_TOKEN, "")): _PASSWORD,
+            vol.Required(
+                CONF_IMPORT_INTERVAL,
+                default=d.get(CONF_IMPORT_INTERVAL, DEFAULT_IMPORT_INTERVAL),
+            ): _int_field(10, 3600, "s"),
+        }
+    )
+
+
 def _validate_aes_key(value: str) -> str | None:
     value = (value or "").strip()
     if len(value) != 64:
@@ -170,6 +192,27 @@ def _validate_aes_key(value: str) -> str | None:
         bytes.fromhex(value)
     except ValueError:
         return "aes_key_hex"
+    return None
+
+
+async def _validate_import(hass, url: str, token: str) -> str | None:
+    """Probe the IDMate export API. Returns an error key, or None on success."""
+    url = (url or "").rstrip("/")
+    session = async_get_clientsession(hass)
+    try:
+        async with session.get(
+            f"{url}/api/ha/vehicles",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=15,
+        ) as resp:
+            if resp.status in (401, 403):
+                return "invalid_auth"
+            if resp.status == 503:
+                return "not_configured"
+            if resp.status >= 400:
+                return "cannot_connect"
+    except (aiohttp.ClientError, TimeoutError):
+        return "cannot_connect"
     return None
 
 
@@ -186,7 +229,7 @@ class IdmateTelemetryConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         return self.async_show_menu(
-            step_id="user", menu_options=[MODE_TELEMETRY, MODE_CHARGE]
+            step_id="user", menu_options=[MODE_TELEMETRY, MODE_CHARGE, MENU_IMPORT]
         )
 
     # ----- telemetry -----
@@ -237,6 +280,33 @@ class IdmateTelemetryConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(title=f"Charge: {name}", data=data)
         return self.async_show_form(step_id="charge", data_schema=_charge_schema({}))
 
+    # ----- import IDMate vehicles -----
+    async def async_step_import_vehicles(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            err = await _validate_import(
+                self.hass,
+                user_input[CONF_IMPORT_URL],
+                user_input.get(CONF_IMPORT_TOKEN, ""),
+            )
+            if err:
+                errors["base"] = err
+            else:
+                url = user_input[CONF_IMPORT_URL].rstrip("/")
+                user_input[CONF_IMPORT_URL] = url
+                await self.async_set_unique_id(f"{DOMAIN}_import_{url}")
+                self._abort_if_unique_id_configured()
+                data = {CONF_MODE: MODE_IMPORT, **user_input}
+                return self.async_create_entry(title=f"Import: {url}", data=data)
+
+        return self.async_show_form(
+            step_id=MENU_IMPORT,
+            data_schema=_import_schema(user_input or {}),
+            errors=errors,
+        )
+
     @staticmethod
     @callback
     def async_get_options_flow(entry: ConfigEntry) -> OptionsFlow:
@@ -257,8 +327,18 @@ class IdmateTelemetryOptionsFlow(OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         current = {**self._entry.data, **self._entry.options}
-        if current.get(CONF_MODE) == MODE_CHARGE:
+        mode = current.get(CONF_MODE)
+        if mode == MODE_CHARGE:
             schema = _charge_schema(current)
+        elif mode == MODE_IMPORT:
+            schema = vol.Schema(
+                {
+                    vol.Required(
+                        CONF_IMPORT_INTERVAL,
+                        default=current.get(CONF_IMPORT_INTERVAL, DEFAULT_IMPORT_INTERVAL),
+                    ): _int_field(10, 3600, "s")
+                }
+            )
         else:
             schema = _entities_schema(current).extend(_timing_fields(current))
         return self.async_show_form(step_id="init", data_schema=schema)
