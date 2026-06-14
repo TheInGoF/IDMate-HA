@@ -129,8 +129,8 @@ def _connection_schema(d: dict[str, Any]) -> vol.Schema:
                 ),
                 vol.Coerce(int),
             ),
-            vol.Required(CONF_USERNAME, default=d.get(CONF_USERNAME, "")): _TEXT,
-            vol.Required(CONF_PASSWORD, default=d.get(CONF_PASSWORD, "")): _PASSWORD,
+            vol.Optional(CONF_USERNAME, default=d.get(CONF_USERNAME, "")): _TEXT,
+            vol.Optional(CONF_PASSWORD, default=d.get(CONF_PASSWORD, "")): _PASSWORD,
             vol.Required(CONF_AES_KEY, default=d.get(CONF_AES_KEY, "")): _PASSWORD,
             vol.Required(CONF_TLS, default=d.get(CONF_TLS, DEFAULT_TLS)): bool,
             vol.Required(
@@ -193,6 +193,24 @@ def _validate_aes_key(value: str) -> str | None:
     except ValueError:
         return "aes_key_hex"
     return None
+
+
+def _normalize_url(raw: str) -> str:
+    """Make a forgiving URL: bare IP -> http://IP:3004. Adds scheme + the
+    default port so the user only has to type the LAN IP."""
+    raw = (raw or "").strip().rstrip("/")
+    if not raw:
+        return raw
+    if "://" not in raw:
+        raw = "http://" + raw
+    scheme, _, rest = raw.partition("://")
+    host = rest.split("/", 1)[0]
+    path = rest[len(host):]
+    # Default the IDMate port only for plain http (the LAN case); leave https
+    # (reverse-proxy/domain on 443) untouched.
+    if ":" not in host and scheme == "http":
+        host = f"{host}:3004"
+    return f"{scheme}://{host}{path}"
 
 
 async def _validate_import(hass, url: str, token: str) -> str | None:
@@ -286,16 +304,14 @@ class IdmateTelemetryConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         if user_input is not None:
+            url = _normalize_url(user_input.get(CONF_IMPORT_URL, ""))
+            user_input[CONF_IMPORT_URL] = url
             err = await _validate_import(
-                self.hass,
-                user_input[CONF_IMPORT_URL],
-                user_input.get(CONF_IMPORT_TOKEN, ""),
+                self.hass, url, user_input.get(CONF_IMPORT_TOKEN, "")
             )
             if err:
                 errors["base"] = err
             else:
-                url = user_input[CONF_IMPORT_URL].rstrip("/")
-                user_input[CONF_IMPORT_URL] = url
                 await self.async_set_unique_id(f"{DOMAIN}_import_{url}")
                 self._abort_if_unique_id_configured()
                 data = {CONF_MODE: MODE_IMPORT, **user_input}

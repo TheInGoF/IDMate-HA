@@ -26,6 +26,14 @@
           "max_interval": "Heartbeat: max. Abstand während aktiv (s)",
           "min_distance": "Distanz-Trigger (m)",
           "min_heading": "Kurswechsel-Trigger (°)"
+        },
+        "data_description": {
+          "device": "Muss der Fahrzeug-ID in IDMate entsprechen (sendet an tele/<device>/data).",
+          "host": "LAN-IP/Host des MQTT-Brokers, von Home Assistant erreichbar.",
+          "username": "Leer lassen, wenn der Broker anonyme Verbindungen erlaubt.",
+          "password": "Leer lassen bei anonymem Broker.",
+          "aes_key": "Exakt derselbe 64-stellige Key wie MQTT_AES_KEY am IDMate-Server.",
+          "tls_insecure": "Bei selbstsigniertem Broker-Zertifikat anlassen."
         }
       },
       "entities": {
@@ -55,15 +63,26 @@
           "base_fee_entity": "Grundgebühr pro Intervall (€/kWh, optional)",
           "charge_odometer_entity": "Kilometerstand (optional)",
           "charge_soc_entity": "Ladezustand (optional)"
+        },
+        "data_description": {
+          "url": "IDMate-Server, z.B. http://192.168.188.5:3004.",
+          "token": "Der CHARGE_WEBHOOK_TOKEN des Servers.",
+          "meter_entity": "Ein fortlaufender (stetig steigender) kWh-Zähler — der Wallbox-/Zähler-Gesamtstand.",
+          "vehicle_plate": "Wird genutzt, wenn keine Kennzeichen-Entität gesetzt oder diese nicht verfügbar ist."
         }
       },
       "import_vehicles": {
         "title": "IDMate-Fahrzeuge importieren",
-        "description": "Holt die letzten Werte der Fahrzeuge, die du in IDMate freigegeben hast (Admin → Home Assistant). Trage die IDMate-Basis-URL und den dort angezeigten Lese-Token ein. Legt pro Fahrzeug ein Gerät mit Sensoren und Standort-Tracker an.",
+        "description": "Holt die in IDMate freigegebenen Fahrzeuge (Admin → Home Assistant) nach HA. Öffne zuerst diese Seite, erzeuge einen Token und hake die Fahrzeuge an — dann hier die Werte eintragen.",
         "data": {
-          "import_url": "IDMate-Basis-URL (z.B. http://192.168.1.5:3004)",
-          "import_token": "Lese-Token (aus IDMate-Admin)",
+          "import_url": "IDMate-Server (IP genügt)",
+          "import_token": "Lese-Token",
           "import_interval": "Abfrageintervall (s)"
+        },
+        "data_description": {
+          "import_url": "Einfach die LAN-IP des Servers eingeben, z.B. 192.168.188.5 — http:// und :3004 werden automatisch ergänzt. Steht auf der IDMate-Admin-Seite.",
+          "import_token": "Aus IDMate → Admin → Home Assistant kopieren (Feld 'Lese-Token').",
+          "import_interval": "Aktualisierungsintervall in Sekunden. 30 ist ok."
         }
       }
     },
