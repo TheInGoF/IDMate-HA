@@ -6,7 +6,6 @@
         "description": "What do you want to set up?",
         "menu_options": {
           "telemetry": "Vehicle telemetry (encrypted MQTT)",
-          "charge": "Charge tracker (15-min meter readings via HTTP)",
           "import_vehicles": "Import IDMate vehicles into Home Assistant (HTTP)"
         }
       },
@@ -51,28 +50,6 @@
           "ext_temp_entity": "Outside temperature",
           "heading_entity": "Heading",
           "charging_entity": "Charging (binary_sensor)"
-        }
-      },
-      "charge": {
-        "title": "IDMate Charge Tracker",
-        "description": "Every quarter hour the consumption of the energy meter is posted to IDMate, which builds charge sessions automatically. Meter is required; price/base-fee are optional €/kWh entities (e.g. a Tibber/EPEX template sensor).",
-        "data": {
-          "name": "Name (unique, e.g. wallbox)",
-          "url": "IDMate base URL (e.g. http://192.168.1.5:3004)",
-          "token": "Webhook token (CHARGE_WEBHOOK_TOKEN)",
-          "meter_entity": "Energy meter (kWh, continuous)",
-          "vehicle_entity": "Vehicle plate (entity, optional)",
-          "vehicle_plate": "Vehicle plate (fixed fallback)",
-          "price_entity": "Price (€/kWh, optional)",
-          "base_fee_entity": "Base fee per interval (€/kWh, optional)",
-          "charge_odometer_entity": "Odometer (optional)",
-          "charge_soc_entity": "State of charge (optional)"
-        },
-        "data_description": {
-          "url": "IDMate server, e.g. http://192.168.1.50:3004.",
-          "token": "The server's CHARGE_WEBHOOK_TOKEN.",
-          "meter_entity": "A continuous (always-increasing) kWh meter — the wallbox/meter total.",
-          "vehicle_plate": "Used when no vehicle entity is set, or when it is unavailable."
         }
       },
       "import_vehicles": {
@@ -120,16 +97,6 @@
           "max_interval": "Heartbeat: max gap while active (s)",
           "min_distance": "Distance trigger (m)",
           "min_heading": "Bearing-change trigger (°)",
-          "name": "Name (unique, e.g. wallbox)",
-          "url": "IDMate base URL",
-          "token": "Webhook token",
-          "meter_entity": "Energy meter (kWh, continuous)",
-          "vehicle_entity": "Vehicle plate (entity, optional)",
-          "vehicle_plate": "Vehicle plate (fixed fallback)",
-          "price_entity": "Price (€/kWh, optional)",
-          "base_fee_entity": "Base fee per interval (€/kWh, optional)",
-          "charge_odometer_entity": "Odometer (optional)",
-          "charge_soc_entity": "State of charge (optional)",
           "import_interval": "Poll interval (s)"
         }
       }

@@ -1,4 +1,4 @@
-"""IDMate: push HA vehicle telemetry (MQTT) and charge readings (HTTP) to IDMate."""
+"""IDMate: push HA vehicle telemetry (MQTT) and import IDMate vehicles (HTTP)."""
 
 from __future__ import annotations
 
@@ -10,13 +10,11 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
-from .charge import IdmateChargeTracker
 from .const import (
     CONF_INTERVAL,
     CONF_MODE,
     DEFAULT_INTERVAL,
     DOMAIN,
-    MODE_CHARGE,
     MODE_IMPORT,
 )
 from .importer import IdmateImportCoordinator
@@ -36,7 +34,7 @@ def _merged_config(entry: ConfigEntry) -> dict:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up one config entry — telemetry (MQTT) or charge tracker (HTTP)."""
+    """Set up one config entry — telemetry (MQTT) or vehicle import (HTTP)."""
     cfg = _merged_config(entry)
 
     if cfg.get(CONF_MODE) == MODE_IMPORT:
@@ -44,13 +42,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.async_config_entry_first_refresh()
         hass.data.setdefault(DOMAIN, {})[entry.entry_id] = ("import", coordinator, None)
         await hass.config_entries.async_forward_entry_setups(entry, IMPORT_PLATFORMS)
-        entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
-        return True
-
-    if cfg.get(CONF_MODE) == MODE_CHARGE:
-        tracker = IdmateChargeTracker(hass, entry, cfg)
-        await tracker.async_start()
-        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = ("charge", tracker, None)
         entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
         return True
 
@@ -89,10 +80,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data.pop(entry.entry_id, None)
     if unsub is not None:
         unsub()
-    if kind == "charge":
-        await obj.async_stop()
-    else:
-        await hass.async_add_executor_job(obj.stop)
+    await hass.async_add_executor_job(obj.stop)
     return True
 
 

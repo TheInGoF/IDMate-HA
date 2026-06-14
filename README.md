@@ -1,7 +1,7 @@
 # IDMate Telemetry — Home Assistant Integration
 
 Bridge Home Assistant to [IDMate](https://github.com/TheInGoF/IDMate). The
-integration offers three kinds of config entry (pick from a menu when adding it),
+integration offers two kinds of config entry (pick from a menu when adding it),
 and you can add as many as you like:
 
 1. **Vehicle telemetry (MQTT)** — sends live vehicle data as **AES-256-CBC
@@ -10,17 +10,18 @@ and you can add as many as you like:
    broker on the **LAN** — plain (port 1883), anonymous, exactly like the
    sticks; the AES key is the security. The broker stays internal (no external
    exposure) and the IDMate server needs **no changes**.
-2. **Charge tracker (HTTP)** — posts 15-minute energy-meter readings to the
-   IDMate webhook (`/api/charge/reading`); IDMate builds charge sessions and
-   costs automatically.
-3. **Import IDMate vehicles (HTTP)** — the reverse direction: pulls the latest
+2. **Import IDMate vehicles (HTTP)** — the reverse direction: pulls the latest
    state of vehicles you exposed in IDMate (e.g. the CAN/ESP32 loggers) and
    creates HA devices with sensors and a location tracker.
 
 Use this when you already have a vehicle in Home Assistant (Tesla via TeslaMate,
 the official Tesla integration, a Volkswagen/ID. integration, etc.) and want to
-feed it into IDMate without writing directly to InfluxDB or maintaining
-hand-written automations — or to bring IDMate's own logged vehicles back into HA.
+feed it into IDMate — or to bring IDMate's own logged vehicles back into HA.
+
+> **Charge tracking** is intentionally **not** part of this integration — it is
+> too setup-specific (which vehicle is charging, tariff/price logic). Use a Home
+> Assistant automation that POSTs to IDMate's `/api/charge/reading` webhook
+> instead; see `homeassistant/idmate_charge_tracker.yaml` in the IDMate repo.
 
 ## Why MQTT instead of a direct InfluxDB write?
 
@@ -92,34 +93,6 @@ rate bounded by `interval`, and produces a much finer track than fixed-interval
 sampling without flooding InfluxDB. Tune all four thresholds in the config /
 options. Boolean fields (charging / parked / DC) follow the firmware convention:
 a set bit means *true*; *false* simply omits the field.
-
-### Charge tracker (HTTP)
-
-- **Name** — unique label for this meter (e.g. `wallbox`).
-- **IDMate base URL** — e.g. `http://192.168.1.5:3004`.
-- **Webhook token** — the server's `CHARGE_WEBHOOK_TOKEN` (sent as `Bearer`).
-- **Energy meter** — a continuous kWh sensor (the wallbox / meter total). Required.
-- **Vehicle** — either an entity that holds the plate, or a fixed fallback plate.
-- **Price / base fee** — optional €/kWh entities (e.g. a Tibber/EPEX template
-  sensor). Forwarded verbatim as `tibber_price` / `tibber_grundgebuehr`.
-- **Odometer / SoC** — optional.
-
-Every wall-clock quarter hour (`:00/:15/:30/:45`) the integration reads the
-meter, computes the consumption since the last tick and POSTs it. Readings with
-`kwh <= 0` or an empty/`free` vehicle are skipped by the server. No
-`input_number` helper or quarter-hour-reset sensor is needed — the integration
-keeps that state itself.
-
-**No consumption is ever lost across restarts.** The last meter value is
-persisted on every tick and *restored* (not re-anchored) on startup, so if Home
-Assistant is down across a tick the next tick simply reports the larger
-difference (e.g. a 30-minute window). With a monotonic all-time meter, the diff
-is always exactly the real consumption since the last successful reading. If the
-meter is still `unavailable` at a tick (entity not loaded yet after a restart),
-that tick is skipped without touching the anchor, so the next one catches up. A
-decreasing meter (counter reset) is skipped. The anchor is set to the current
-meter only on the very first run, to avoid billing the lifetime total as one
-window.
 
 ### Import IDMate vehicles (HTTP)
 

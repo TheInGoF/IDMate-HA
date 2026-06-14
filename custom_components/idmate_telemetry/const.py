@@ -5,7 +5,6 @@ DOMAIN = "idmate_telemetry"
 # Entry mode — one integration, several kinds of config entry.
 CONF_MODE = "mode"
 MODE_TELEMETRY = "telemetry"
-MODE_CHARGE = "charge"
 MODE_IMPORT = "import"
 
 # ── Telemetry: connection config keys ────────────────────────
@@ -32,18 +31,6 @@ CONF_POWER = "power_entity"
 CONF_CHARGING = "charging_entity"
 CONF_EXT_TEMP = "ext_temp_entity"
 CONF_HEADING = "heading_entity"
-
-# ── Charge tracker config keys ───────────────────────────────
-CONF_NAME = "name"
-CONF_URL = "url"
-CONF_TOKEN = "token"
-CONF_METER = "meter_entity"
-CONF_VEHICLE_ENTITY = "vehicle_entity"
-CONF_VEHICLE_PLATE = "vehicle_plate"
-CONF_PRICE = "price_entity"
-CONF_BASE_FEE = "base_fee_entity"
-CONF_CHARGE_ODOMETER = "charge_odometer_entity"
-CONF_CHARGE_SOC = "charge_soc_entity"
 
 # ── Import (IDMate vehicles -> Home Assistant) config keys ───
 CONF_IMPORT_URL = "import_url"

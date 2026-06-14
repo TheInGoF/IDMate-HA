@@ -1,4 +1,4 @@
-"""Config + options flow for IDMate (telemetry + charge tracker)."""
+"""Config + options flow for IDMate (telemetry + vehicle import)."""
 
 from __future__ import annotations
 
@@ -19,9 +19,6 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
     CONF_AES_KEY,
-    CONF_BASE_FEE,
-    CONF_CHARGE_ODOMETER,
-    CONF_CHARGE_SOC,
     CONF_CHARGING,
     CONF_DEVICE,
     CONF_EXT_TEMP,
@@ -33,26 +30,19 @@ from .const import (
     CONF_INTERVAL,
     CONF_LOCATION,
     CONF_MAX_INTERVAL,
-    CONF_METER,
     CONF_MIN_DISTANCE,
     CONF_MIN_HEADING,
     CONF_MODE,
-    CONF_NAME,
     CONF_ODOMETER,
     CONF_PASSWORD,
     CONF_PORT,
     CONF_POWER,
-    CONF_PRICE,
     CONF_RANGE,
     CONF_SOC,
     CONF_SPEED,
     CONF_TLS,
     CONF_TLS_INSECURE,
-    CONF_TOKEN,
-    CONF_URL,
     CONF_USERNAME,
-    CONF_VEHICLE_ENTITY,
-    CONF_VEHICLE_PLATE,
     DEFAULT_IMPORT_INTERVAL,
     DEFAULT_INTERVAL,
     DEFAULT_MAX_INTERVAL,
@@ -62,7 +52,6 @@ from .const import (
     DEFAULT_TLS,
     DEFAULT_TLS_INSECURE,
     DOMAIN,
-    MODE_CHARGE,
     MODE_IMPORT,
     MODE_TELEMETRY,
 )
@@ -157,24 +146,6 @@ def _entities_schema(d: dict[str, Any]) -> vol.Schema:
     return vol.Schema(fields)
 
 
-def _charge_schema(d: dict[str, Any]) -> vol.Schema:
-    fields: dict = {
-        vol.Required(CONF_NAME, default=d.get(CONF_NAME, "")): _TEXT,
-        vol.Required(CONF_URL, default=d.get(CONF_URL, "")): _TEXT,
-        vol.Required(CONF_TOKEN, default=d.get(CONF_TOKEN, "")): _PASSWORD,
-    }
-    _opt(fields, CONF_METER, _entity("sensor"), d, required=True)
-    _opt(fields, CONF_VEHICLE_ENTITY, _entity("sensor"), d)
-    fields[
-        vol.Optional(CONF_VEHICLE_PLATE, default=d.get(CONF_VEHICLE_PLATE, ""))
-    ] = _TEXT
-    _opt(fields, CONF_PRICE, _entity("sensor"), d)
-    _opt(fields, CONF_BASE_FEE, _entity("sensor"), d)
-    _opt(fields, CONF_CHARGE_ODOMETER, _entity("sensor"), d)
-    _opt(fields, CONF_CHARGE_SOC, _entity("sensor"), d)
-    return vol.Schema(fields)
-
-
 def _import_schema(d: dict[str, Any]) -> vol.Schema:
     return vol.Schema(
         {
@@ -240,7 +211,7 @@ async def _validate_import(hass, url: str, token: str) -> str | None:
 
 # ── config flow ──────────────────────────────────────────────
 class IdmateTelemetryConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Menu → telemetry (2 steps) or charge tracker (1 step)."""
+    """Menu → telemetry (2 steps) or import IDMate vehicles (1 step)."""
 
     VERSION = 1
 
@@ -251,7 +222,7 @@ class IdmateTelemetryConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         return self.async_show_menu(
-            step_id="user", menu_options=[MODE_TELEMETRY, MODE_CHARGE, MENU_IMPORT]
+            step_id="user", menu_options=[MODE_TELEMETRY, MENU_IMPORT]
         )
 
     # ----- telemetry -----
@@ -289,18 +260,6 @@ class IdmateTelemetryConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="entities", data_schema=_entities_schema({})
         )
-
-    # ----- charge tracker -----
-    async def async_step_charge(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        if user_input is not None:
-            name = user_input[CONF_NAME].strip()
-            await self.async_set_unique_id(f"{DOMAIN}_charge_{name}")
-            self._abort_if_unique_id_configured()
-            data = {CONF_MODE: MODE_CHARGE, **user_input}
-            return self.async_create_entry(title=f"Charge: {name}", data=data)
-        return self.async_show_form(step_id="charge", data_schema=_charge_schema({}))
 
     # ----- import IDMate vehicles -----
     async def async_step_import_vehicles(
@@ -347,10 +306,7 @@ class IdmateTelemetryOptionsFlow(OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         current = {**self._entry.data, **self._entry.options}
-        mode = current.get(CONF_MODE)
-        if mode == MODE_CHARGE:
-            schema = _charge_schema(current)
-        elif mode == MODE_IMPORT:
+        if current.get(CONF_MODE) == MODE_IMPORT:
             schema = vol.Schema(
                 {
                     vol.Required(

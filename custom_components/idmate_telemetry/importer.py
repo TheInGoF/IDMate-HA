@@ -1,6 +1,6 @@
 """Poll the IDMate server for selected vehicles and expose them in HA.
 
-This is the reverse direction of the telemetry/charge modes: instead of pushing
+This is the reverse direction of the telemetry mode: instead of pushing
 data to IDMate, it pulls the latest state of the vehicles the IDMate admin has
 exposed (GET /api/ha/vehicles, Bearer token) and feeds it to sensor and
 device_tracker entities via a DataUpdateCoordinator.

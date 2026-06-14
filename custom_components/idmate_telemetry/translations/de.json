@@ -6,7 +6,6 @@
         "description": "Was möchtest du einrichten?",
         "menu_options": {
           "telemetry": "Fahrzeug-Telemetrie (verschlüsseltes MQTT)",
-          "charge": "Ladetracker (15-Min-Zählerstände via HTTP)",
           "import_vehicles": "IDMate-Fahrzeuge in Home Assistant importieren (HTTP)"
         }
       },
@@ -51,28 +50,6 @@
           "ext_temp_entity": "Außentemperatur",
           "heading_entity": "Fahrtrichtung (Heading)",
           "charging_entity": "Lädt (binary_sensor)"
-        }
-      },
-      "charge": {
-        "title": "IDMate Ladetracker",
-        "description": "Alle 15 Minuten wird der Verbrauch des Stromzählers an IDMate gesendet, das daraus automatisch Ladesessions bildet. Zähler ist Pflicht; Preis/Grundgebühr sind optionale €/kWh-Entitäten (z.B. ein Tibber/EPEX-Template-Sensor).",
-        "data": {
-          "name": "Name (eindeutig, z.B. wallbox)",
-          "url": "IDMate-Basis-URL (z.B. http://192.168.1.5:3004)",
-          "token": "Webhook-Token (CHARGE_WEBHOOK_TOKEN)",
-          "meter_entity": "Stromzähler (kWh, fortlaufend)",
-          "vehicle_entity": "Kennzeichen (Entität, optional)",
-          "vehicle_plate": "Kennzeichen (fester Fallback)",
-          "price_entity": "Preis (€/kWh, optional)",
-          "base_fee_entity": "Grundgebühr pro Intervall (€/kWh, optional)",
-          "charge_odometer_entity": "Kilometerstand (optional)",
-          "charge_soc_entity": "Ladezustand (optional)"
-        },
-        "data_description": {
-          "url": "IDMate-Server, z.B. http://192.168.1.50:3004.",
-          "token": "Der CHARGE_WEBHOOK_TOKEN des Servers.",
-          "meter_entity": "Ein fortlaufender (stetig steigender) kWh-Zähler — der Wallbox-/Zähler-Gesamtstand.",
-          "vehicle_plate": "Wird genutzt, wenn keine Kennzeichen-Entität gesetzt oder diese nicht verfügbar ist."
         }
       },
       "import_vehicles": {
@@ -120,16 +97,6 @@
           "max_interval": "Heartbeat: max. Abstand während aktiv (s)",
           "min_distance": "Distanz-Trigger (m)",
           "min_heading": "Kurswechsel-Trigger (°)",
-          "name": "Name (eindeutig, z.B. wallbox)",
-          "url": "IDMate-Basis-URL",
-          "token": "Webhook-Token",
-          "meter_entity": "Stromzähler (kWh, fortlaufend)",
-          "vehicle_entity": "Kennzeichen (Entität, optional)",
-          "vehicle_plate": "Kennzeichen (fester Fallback)",
-          "price_entity": "Preis (€/kWh, optional)",
-          "base_fee_entity": "Grundgebühr pro Intervall (€/kWh, optional)",
-          "charge_odometer_entity": "Kilometerstand (optional)",
-          "charge_soc_entity": "Ladezustand (optional)",
           "import_interval": "Abfrageintervall (s)"
         }
       }
