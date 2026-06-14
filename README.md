@@ -135,11 +135,12 @@ there is no loopback. Then add this integration:
 - **Poll interval** — default 30 s.
 
 For each exposed vehicle the integration creates a **device** with sensors (state
-of charge, speed, power, range, odometer, voltage, current, temperatures, logger
-battery, LTE signal, mobile operator), **binary sensors** (charging, DC fast
-charging, parked) and a **`device_tracker`** for the map. Values follow the
-IDMate server's latest known state (refreshed every poll). New vehicles exposed
-later in IDMate appear after reloading the entry.
+of charge, speed, power, range, odometer, heading, voltage, current, battery &
+outside temperature, logger battery, LTE signal, mobile operator) and a
+**`device_tracker`** for the map. Values follow the IDMate server's latest known
+state (refreshed every poll). A sensor is unavailable while its vehicle doesn't
+report that field. New vehicles exposed later in IDMate appear after reloading
+the entry.
 
 ## Requirements
 

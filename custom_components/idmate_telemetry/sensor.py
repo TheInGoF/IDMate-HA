@@ -10,6 +10,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    DEGREE,
     PERCENTAGE,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
@@ -32,6 +33,7 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
     SensorEntityDescription(key="power", name="Power", native_unit_of_measurement=UnitOfPower.KILO_WATT, device_class=SensorDeviceClass.POWER, state_class=_M),
     SensorEntityDescription(key="range_km", name="Range", native_unit_of_measurement=UnitOfLength.KILOMETERS, device_class=SensorDeviceClass.DISTANCE, state_class=_M),
     SensorEntityDescription(key="odometer", name="Odometer", native_unit_of_measurement=UnitOfLength.KILOMETERS, device_class=SensorDeviceClass.DISTANCE, state_class=SensorStateClass.TOTAL_INCREASING),
+    SensorEntityDescription(key="heading", name="Heading", native_unit_of_measurement=DEGREE, state_class=_M, icon="mdi:compass"),
     SensorEntityDescription(key="voltage", name="Voltage", native_unit_of_measurement=UnitOfElectricPotential.VOLT, device_class=SensorDeviceClass.VOLTAGE, state_class=_M),
     SensorEntityDescription(key="current", name="Current", native_unit_of_measurement=UnitOfElectricCurrent.AMPERE, device_class=SensorDeviceClass.CURRENT, state_class=_M),
     SensorEntityDescription(key="bat_temp", name="Battery temperature", native_unit_of_measurement=UnitOfTemperature.CELSIUS, device_class=SensorDeviceClass.TEMPERATURE, state_class=_M),

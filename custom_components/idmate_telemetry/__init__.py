@@ -26,7 +26,6 @@ _LOGGER = logging.getLogger(__name__)
 
 IMPORT_PLATFORMS = [
     Platform.SENSOR,
-    Platform.BINARY_SENSOR,
     Platform.DEVICE_TRACKER,
 ]
 
