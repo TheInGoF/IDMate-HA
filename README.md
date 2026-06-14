@@ -70,10 +70,23 @@ Entity mapping (SoC + speed required, rest optional):
 - Units for range / power / odometer are auto-detected from
   `unit_of_measurement` (`m`/`km`/`mi`, `W`/`kW`, `mph`).
 
-A telegram is sent every interval **only while driving or charging** (valid SoC
-and (speed > 0 or charging)). Parked-and-not-charging sends nothing, so the car
-is allowed to sleep. Boolean fields (charging / parked / DC) follow the firmware
-convention: a set bit means *true*; *false* simply omits the field.
+**Adaptive sending (GPS state machine).** Instead of a dumb fixed timer the
+integration mirrors the ESP32 firmware: it *evaluates* every `interval` seconds
+(the throttle floor — it never sends faster than this) and only emits a telegram
+when a trigger fires:
+
+- **Distance** — moved ≥ `min_distance` (default 100 m): dense points in town,
+  sparse on the motorway.
+- **Heading** — bearing (computed from GPS) changed ≥ `min_heading` (default 8°):
+  captures curves. The computed bearing is also sent as the `hd` field.
+- **Heartbeat** — at least every `max_interval` (default 60 s) while active.
+- **State change** — charging started/stopped: sent immediately.
+
+This sends nothing while parked-and-not-charging (the car may sleep), keeps the
+rate bounded by `interval`, and produces a much finer track than fixed-interval
+sampling without flooding InfluxDB. Tune all four thresholds in the config /
+options. Boolean fields (charging / parked / DC) follow the firmware convention:
+a set bit means *true*; *false* simply omits the field.
 
 ### Charge tracker (HTTP)
 

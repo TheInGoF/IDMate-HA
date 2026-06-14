@@ -11,6 +11,7 @@ Fields are packed in ascending bit order; PKCS7 (128-bit) padding.
 from __future__ import annotations
 
 import logging
+import math
 import os
 import ssl
 import struct
@@ -21,7 +22,13 @@ from cryptography.hazmat.primitives.padding import PKCS7
 
 from homeassistant.core import HomeAssistant
 
-from .const import PROTO_VERSION
+from .const import (
+    DEFAULT_INTERVAL,
+    DEFAULT_MAX_INTERVAL,
+    DEFAULT_MIN_DISTANCE,
+    DEFAULT_MIN_HEADING,
+    PROTO_VERSION,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +58,30 @@ _SCHEMA = [
 ]
 
 _MILES_TO_KM = 1.609344
+_EARTH_R = 6_371_000.0  # mean Earth radius (m)
+
+
+def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Great-circle distance between two WGS84 points, in metres."""
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlmb = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
+    return 2 * _EARTH_R * math.asin(min(1.0, math.sqrt(a)))
+
+
+def _bearing_deg(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Initial bearing from point 1 to point 2, in degrees (0..360)."""
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dl = math.radians(lon2 - lon1)
+    y = math.sin(dl) * math.cos(p2)
+    x = math.cos(p1) * math.sin(p2) - math.sin(p1) * math.cos(p2) * math.cos(dl)
+    return (math.degrees(math.atan2(y, x)) + 360.0) % 360.0
+
+
+def _angle_diff(a: float, b: float) -> float:
+    """Smallest absolute difference between two bearings (0..180)."""
+    return abs((a - b + 180.0) % 360.0 - 180.0)
 
 
 def build_telegram(aes_key: bytes, values: dict, ts: int) -> bytes:
@@ -95,6 +126,18 @@ class IdmateTelemetry:
         self._topic = f"tele/{cfg['device']}/data"
         self._client = None
 
+        # Adaptive send thresholds (GPS state machine, mirrors the firmware).
+        self._max_interval = float(cfg.get("max_interval", DEFAULT_MAX_INTERVAL))
+        self._min_distance = float(cfg.get("min_distance", DEFAULT_MIN_DISTANCE))
+        self._min_heading = float(cfg.get("min_heading", DEFAULT_MIN_HEADING))
+
+        # Mutable state between ticks.
+        self._last_sent = 0.0
+        self._last_lat: float | None = None
+        self._last_lon: float | None = None
+        self._last_bearing: float | None = None
+        self._last_charging: int | None = None
+
     # ── lifecycle ────────────────────────────────────────────
     def start(self) -> None:
         """Create the MQTT client and connect (runs in executor)."""
@@ -137,20 +180,77 @@ class IdmateTelemetry:
 
     # ── per-tick publish ─────────────────────────────────────
     def tick(self) -> None:
-        """Read mapped entities and publish one telegram, if conditions allow."""
+        """Evaluate the GPS state machine and publish a telegram when a trigger
+        fires. Runs every ``interval`` seconds (the throttle floor); a send only
+        happens on a distance / heading / heartbeat / state trigger."""
         values = self._collect_values()
         if values is None:
+            return  # parked and not charging -> nothing to do
+
+        now = time.time()
+
+        # Distance + bearing relative to the last point we actually sent.
+        dist = bearing = None
+        lat = values.get("la")
+        lon = values.get("lo")
+        if lat is not None and self._last_lat is not None:
+            dist = _haversine_m(self._last_lat, self._last_lon, lat, lon)
+            bearing = _bearing_deg(self._last_lat, self._last_lon, lat, lon)
+
+        reason = self._decide(values, now, dist, bearing)
+        if reason is None:
             return
-        telegram = build_telegram(self._aes_key, values, int(time.time()))
-        if self._client is None:
-            return
-        result = self._client.publish(self._topic, payload=telegram, qos=0)
-        _LOGGER.debug(
-            "IDMate Telemetry: %d bytes -> %s (rc=%s)",
-            len(telegram),
-            self._topic,
-            getattr(result, "rc", "?"),
-        )
+
+        # Enrich with computed heading while moving (we have no heading sensor).
+        if bearing is not None and values.get("v", 0) > 0 and dist and dist > 5:
+            values["hd"] = int(round(bearing)) % 360
+
+        telegram = build_telegram(self._aes_key, values, int(now))
+        if self._client is not None:
+            result = self._client.publish(self._topic, payload=telegram, qos=0)
+            _LOGGER.debug(
+                "IDMate Telemetry: %d bytes -> %s (%s, rc=%s)",
+                len(telegram),
+                self._topic,
+                reason,
+                getattr(result, "rc", "?"),
+            )
+
+        # Advance state only on an actual send.
+        self._last_sent = now
+        self._last_charging = values.get("c", 0)
+        if lat is not None:
+            self._last_lat = lat
+            self._last_lon = lon
+        if bearing is not None:
+            self._last_bearing = bearing
+
+    def _decide(self, values: dict, now: float, dist, bearing) -> str | None:
+        """Return the trigger reason, or None if no telegram should be sent."""
+        charging = values.get("c", 0)
+        # State transition (charging started/stopped) -> send immediately. Also
+        # covers the very first tick (last_charging is None).
+        if self._last_charging is None or charging != self._last_charging:
+            return "state"
+        # Heartbeat: never go silent longer than max_interval while active.
+        if (now - self._last_sent) >= self._max_interval:
+            return "heartbeat"
+        # Parked while charging: heartbeat only (no distance/heading).
+        if values.get("v", 0) <= 0:
+            return None
+        # Driving: distance trigger.
+        if dist is not None and dist >= self._min_distance:
+            return "distance"
+        # Driving: curve trigger (bearing change), ignoring GPS jitter < 5 m.
+        if (
+            bearing is not None
+            and self._last_bearing is not None
+            and dist
+            and dist > 5
+            and _angle_diff(bearing, self._last_bearing) >= self._min_heading
+        ):
+            return "heading"
+        return None
 
     # ── state reading ────────────────────────────────────────
     def _num(self, entity_id: str | None, attr: str | None = None):
