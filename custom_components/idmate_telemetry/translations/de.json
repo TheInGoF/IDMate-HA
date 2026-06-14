@@ -21,7 +21,10 @@
           "aes_key": "AES-Key (64 Hex-Zeichen)",
           "tls": "TLS verwenden",
           "tls_insecure": "Selbstsigniertes Zertifikat akzeptieren",
-          "interval": "Sendeintervall (Sekunden)"
+          "interval": "Prüfintervall / Mindestabstand zwischen Sendungen (s)",
+          "max_interval": "Heartbeat: max. Abstand während aktiv (s)",
+          "min_distance": "Distanz-Trigger (m)",
+          "min_heading": "Kurswechsel-Trigger (°)"
         }
       },
       "entities": {
@@ -75,7 +78,10 @@
           "range_entity": "Restreichweite",
           "power_entity": "Leistung",
           "charging_entity": "Lädt (binary_sensor)",
-          "interval": "Sendeintervall (Sekunden)",
+          "interval": "Prüfintervall / Mindestabstand zwischen Sendungen (s)",
+          "max_interval": "Heartbeat: max. Abstand während aktiv (s)",
+          "min_distance": "Distanz-Trigger (m)",
+          "min_heading": "Kurswechsel-Trigger (°)",
           "name": "Name (eindeutig, z.B. wallbox)",
           "url": "IDMate-Basis-URL",
           "token": "Webhook-Token",

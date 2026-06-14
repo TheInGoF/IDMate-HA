@@ -16,7 +16,10 @@ CONF_AES_KEY = "aes_key"
 CONF_TLS = "tls"
 CONF_TLS_INSECURE = "tls_insecure"
 CONF_DEVICE = "device"
-CONF_INTERVAL = "interval"
+CONF_INTERVAL = "interval"  # evaluation tick / minimum interval between sends (s)
+CONF_MAX_INTERVAL = "max_interval"  # heartbeat: send at least this often while active (s)
+CONF_MIN_DISTANCE = "min_distance"  # send when moved at least this far (m)
+CONF_MIN_HEADING = "min_heading"  # send when bearing changed at least this much (deg)
 
 # ── Telemetry: entity-mapping config keys ────────────────────
 CONF_SOC = "soc_entity"
@@ -41,7 +44,10 @@ CONF_CHARGE_SOC = "charge_soc_entity"
 
 # ── Defaults ─────────────────────────────────────────────────
 DEFAULT_PORT = 8883
-DEFAULT_INTERVAL = 60
+DEFAULT_INTERVAL = 10        # evaluation tick / throttle floor (s)
+DEFAULT_MAX_INTERVAL = 60    # heartbeat while active (s)
+DEFAULT_MIN_DISTANCE = 100   # distance trigger (m) — mirrors the firmware
+DEFAULT_MIN_HEADING = 8      # bearing-change trigger (deg) — curve approximation
 DEFAULT_TLS = True
 DEFAULT_TLS_INSECURE = True
 

@@ -25,7 +25,10 @@ from .const import (
     CONF_HOST,
     CONF_INTERVAL,
     CONF_LOCATION,
+    CONF_MAX_INTERVAL,
     CONF_METER,
+    CONF_MIN_DISTANCE,
+    CONF_MIN_HEADING,
     CONF_MODE,
     CONF_NAME,
     CONF_ODOMETER,
@@ -44,6 +47,9 @@ from .const import (
     CONF_VEHICLE_ENTITY,
     CONF_VEHICLE_PLATE,
     DEFAULT_INTERVAL,
+    DEFAULT_MAX_INTERVAL,
+    DEFAULT_MIN_DISTANCE,
+    DEFAULT_MIN_HEADING,
     DEFAULT_PORT,
     DEFAULT_TLS,
     DEFAULT_TLS_INSECURE,
@@ -58,16 +64,34 @@ _PASSWORD = selector.TextSelector(
 )
 
 
-def _interval_field(default: int):
+def _int_field(lo: int, hi: int, unit: str):
     return vol.All(
         selector.NumberSelector(
             selector.NumberSelectorConfig(
-                min=5, max=3600, unit_of_measurement="s",
+                min=lo, max=hi, unit_of_measurement=unit,
                 mode=selector.NumberSelectorMode.BOX,
             )
         ),
         vol.Coerce(int),
     )
+
+
+def _timing_fields(d: dict) -> dict:
+    """Adaptive-sender timing/threshold fields (shared by config + options)."""
+    return {
+        vol.Required(
+            CONF_INTERVAL, default=d.get(CONF_INTERVAL, DEFAULT_INTERVAL)
+        ): _int_field(2, 3600, "s"),
+        vol.Required(
+            CONF_MAX_INTERVAL, default=d.get(CONF_MAX_INTERVAL, DEFAULT_MAX_INTERVAL)
+        ): _int_field(5, 3600, "s"),
+        vol.Required(
+            CONF_MIN_DISTANCE, default=d.get(CONF_MIN_DISTANCE, DEFAULT_MIN_DISTANCE)
+        ): _int_field(0, 10000, "m"),
+        vol.Required(
+            CONF_MIN_HEADING, default=d.get(CONF_MIN_HEADING, DEFAULT_MIN_HEADING)
+        ): _int_field(0, 180, "°"),
+    }
 
 
 def _entity(domain: str):
@@ -103,9 +127,7 @@ def _connection_schema(d: dict[str, Any]) -> vol.Schema:
             vol.Required(
                 CONF_TLS_INSECURE, default=d.get(CONF_TLS_INSECURE, DEFAULT_TLS_INSECURE)
             ): bool,
-            vol.Required(
-                CONF_INTERVAL, default=d.get(CONF_INTERVAL, DEFAULT_INTERVAL)
-            ): _interval_field(DEFAULT_INTERVAL),
+            **_timing_fields(d),
         }
     )
 
@@ -238,12 +260,5 @@ class IdmateTelemetryOptionsFlow(OptionsFlow):
         if current.get(CONF_MODE) == MODE_CHARGE:
             schema = _charge_schema(current)
         else:
-            schema = _entities_schema(current).extend(
-                {
-                    vol.Required(
-                        CONF_INTERVAL,
-                        default=current.get(CONF_INTERVAL, DEFAULT_INTERVAL),
-                    ): _interval_field(DEFAULT_INTERVAL),
-                }
-            )
+            schema = _entities_schema(current).extend(_timing_fields(current))
         return self.async_show_form(step_id="init", data_schema=schema)
