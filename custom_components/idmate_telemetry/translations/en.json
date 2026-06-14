@@ -6,7 +6,8 @@
         "description": "What do you want to set up?",
         "menu_options": {
           "telemetry": "Vehicle telemetry (encrypted MQTT)",
-          "charge": "Charge tracker (15-min meter readings via HTTP)"
+          "charge": "Charge tracker (15-min meter readings via HTTP)",
+          "import_vehicles": "Import IDMate vehicles into Home Assistant (HTTP)"
         }
       },
       "telemetry": {
@@ -55,11 +56,23 @@
           "charge_odometer_entity": "Odometer (optional)",
           "charge_soc_entity": "State of charge (optional)"
         }
+      },
+      "import_vehicles": {
+        "title": "Import IDMate vehicles",
+        "description": "Pulls the latest state of the vehicles you exposed in IDMate (Admin → Home Assistant). Enter the IDMate base URL and the read token shown there. Creates a device per vehicle with sensors and a location tracker.",
+        "data": {
+          "import_url": "IDMate base URL (e.g. http://192.168.1.5:3004)",
+          "import_token": "Read token (from IDMate admin)",
+          "import_interval": "Poll interval (s)"
+        }
       }
     },
     "error": {
       "aes_key_length": "The AES key must be exactly 64 hex characters (32 bytes).",
-      "aes_key_hex": "The AES key must contain only hex characters (0-9, a-f)."
+      "aes_key_hex": "The AES key must contain only hex characters (0-9, a-f).",
+      "cannot_connect": "Could not reach the IDMate server at this URL.",
+      "invalid_auth": "The IDMate server rejected this token.",
+      "not_configured": "IDMate has no Home Assistant export configured yet (set a token in IDMate admin)."
     },
     "abort": {
       "already_configured": "This entry is already configured."
@@ -91,7 +104,8 @@
           "price_entity": "Price (€/kWh, optional)",
           "base_fee_entity": "Base fee per interval (€/kWh, optional)",
           "charge_odometer_entity": "Odometer (optional)",
-          "charge_soc_entity": "State of charge (optional)"
+          "charge_soc_entity": "State of charge (optional)",
+          "import_interval": "Poll interval (s)"
         }
       }
     }

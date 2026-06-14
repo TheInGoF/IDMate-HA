@@ -6,7 +6,8 @@
         "description": "Was möchtest du einrichten?",
         "menu_options": {
           "telemetry": "Fahrzeug-Telemetrie (verschlüsseltes MQTT)",
-          "charge": "Ladetracker (15-Min-Zählerstände via HTTP)"
+          "charge": "Ladetracker (15-Min-Zählerstände via HTTP)",
+          "import_vehicles": "IDMate-Fahrzeuge in Home Assistant importieren (HTTP)"
         }
       },
       "telemetry": {
@@ -55,11 +56,23 @@
           "charge_odometer_entity": "Kilometerstand (optional)",
           "charge_soc_entity": "Ladezustand (optional)"
         }
+      },
+      "import_vehicles": {
+        "title": "IDMate-Fahrzeuge importieren",
+        "description": "Holt die letzten Werte der Fahrzeuge, die du in IDMate freigegeben hast (Admin → Home Assistant). Trage die IDMate-Basis-URL und den dort angezeigten Lese-Token ein. Legt pro Fahrzeug ein Gerät mit Sensoren und Standort-Tracker an.",
+        "data": {
+          "import_url": "IDMate-Basis-URL (z.B. http://192.168.1.5:3004)",
+          "import_token": "Lese-Token (aus IDMate-Admin)",
+          "import_interval": "Abfrageintervall (s)"
+        }
       }
     },
     "error": {
       "aes_key_length": "Der AES-Key muss exakt 64 Hex-Zeichen lang sein (32 Byte).",
-      "aes_key_hex": "Der AES-Key darf nur Hex-Zeichen enthalten (0-9, a-f)."
+      "aes_key_hex": "Der AES-Key darf nur Hex-Zeichen enthalten (0-9, a-f).",
+      "cannot_connect": "IDMate-Server unter dieser URL nicht erreichbar.",
+      "invalid_auth": "Der IDMate-Server hat diesen Token abgelehnt.",
+      "not_configured": "In IDMate ist noch kein Home-Assistant-Export konfiguriert (Token im IDMate-Admin setzen)."
     },
     "abort": {
       "already_configured": "Dieser Eintrag ist bereits konfiguriert."
@@ -91,7 +104,8 @@
           "price_entity": "Preis (€/kWh, optional)",
           "base_fee_entity": "Grundgebühr pro Intervall (€/kWh, optional)",
           "charge_odometer_entity": "Kilometerstand (optional)",
-          "charge_soc_entity": "Ladezustand (optional)"
+          "charge_soc_entity": "Ladezustand (optional)",
+          "import_interval": "Abfrageintervall (s)"
         }
       }
     }

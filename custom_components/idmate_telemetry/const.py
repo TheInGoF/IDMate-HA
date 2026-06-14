@@ -2,10 +2,11 @@
 
 DOMAIN = "idmate_telemetry"
 
-# Entry mode — one integration, two kinds of config entry.
+# Entry mode — one integration, several kinds of config entry.
 CONF_MODE = "mode"
 MODE_TELEMETRY = "telemetry"
 MODE_CHARGE = "charge"
+MODE_IMPORT = "import"
 
 # ── Telemetry: connection config keys ────────────────────────
 CONF_HOST = "host"
@@ -42,7 +43,13 @@ CONF_BASE_FEE = "base_fee_entity"
 CONF_CHARGE_ODOMETER = "charge_odometer_entity"
 CONF_CHARGE_SOC = "charge_soc_entity"
 
+# ── Import (IDMate vehicles -> Home Assistant) config keys ───
+CONF_IMPORT_URL = "import_url"
+CONF_IMPORT_TOKEN = "import_token"
+CONF_IMPORT_INTERVAL = "import_interval"
+
 # ── Defaults ─────────────────────────────────────────────────
+DEFAULT_IMPORT_INTERVAL = 30  # poll interval for imported vehicles (s)
 DEFAULT_PORT = 8883
 DEFAULT_INTERVAL = 10        # evaluation tick / throttle floor (s)
 DEFAULT_MAX_INTERVAL = 60    # heartbeat while active (s)
