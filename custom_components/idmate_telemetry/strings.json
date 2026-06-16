@@ -27,7 +27,7 @@
           "min_heading": "Bearing-change trigger (°)"
         },
         "data_description": {
-          "device": "Must match the vehicle id in IDMate (publishes to tele/<device>/data).",
+          "device": "Must match the vehicle id in IDMate (publishes to tele/.../data).",
           "host": "The broker's LAN IP — it stays internal, no need to expose it to the internet.",
           "port": "1883 (plain) — IDMate's broker model. Only change it for a TLS broker.",
           "username": "Leave empty — IDMate's broker is anonymous; the AES key is the security.",

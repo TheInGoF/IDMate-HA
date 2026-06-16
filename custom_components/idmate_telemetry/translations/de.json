@@ -27,7 +27,7 @@
           "min_heading": "Kurswechsel-Trigger (°)"
         },
         "data_description": {
-          "device": "Muss der Fahrzeug-ID in IDMate entsprechen (sendet an tele/<device>/data).",
+          "device": "Muss der Fahrzeug-ID in IDMate entsprechen (sendet an tele/.../data).",
           "host": "Die LAN-IP des Brokers — bleibt intern, keine Freigabe ins Internet nötig.",
           "port": "1883 (plain) — IDMate-Broker-Modell. Nur für einen TLS-Broker ändern.",
           "username": "Leer lassen — IDMates Broker ist anonym; die Sicherheit ist der AES-Key.",
