@@ -137,6 +137,7 @@ class IdmateTelemetry:
         self._last_lon: float | None = None
         self._last_bearing: float | None = None
         self._last_charging: int | None = None
+        self._was_active = False  # was moving/charging on the previous tick
 
     # ── lifecycle ────────────────────────────────────────────
     def start(self) -> None:
@@ -185,9 +186,11 @@ class IdmateTelemetry:
         happens on a distance / heading / heartbeat / state trigger."""
         values = self._collect_values()
         if values is None:
-            return  # parked and not charging -> nothing to do
+            self._was_active = False  # car asleep (no SoC)
+            return
 
         now = time.time()
+        active = values.get("v", 0) > 0 or bool(values.get("c", 0))
 
         # Distance + bearing relative to the last point we actually sent.
         dist = bearing = None
@@ -197,7 +200,16 @@ class IdmateTelemetry:
             dist = _haversine_m(self._last_lat, self._last_lon, lat, lon)
             bearing = _bearing_deg(self._last_lat, self._last_lon, lat, lon)
 
-        reason = self._decide(values, now, dist, bearing)
+        if active:
+            reason = self._decide(values, now, dist, bearing)
+        elif self._was_active:
+            # Just stopped: send one final point at the real parking spot
+            # (v=0, pk=1), so the track doesn't end ~50 m short while moving.
+            reason = "parked"
+        else:
+            reason = None  # parked and idle -> let the car sleep
+
+        self._was_active = active
         if reason is None:
             return
 
@@ -289,8 +301,8 @@ class IdmateTelemetry:
         charging_st = self.hass.states.get(cfg.get("charging_entity") or "")
         charging = bool(charging_st and charging_st.state == "on")
 
-        if speed <= 0 and not charging:
-            return None  # parked and not charging -> let the car sleep
+        # Note: parked-and-idle is NOT filtered here — tick() still needs the
+        # current (parked) position to send the final point once on stop.
 
         values: dict = {
             "s": soc,
