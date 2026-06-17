@@ -39,6 +39,7 @@ from .const import (
     CONF_POWER,
     CONF_RANGE,
     CONF_SOC,
+    CONF_STILL_POINTS,
     CONF_SPEED,
     CONF_TLS,
     CONF_TLS_INSECURE,
@@ -48,6 +49,7 @@ from .const import (
     DEFAULT_MAX_INTERVAL,
     DEFAULT_MIN_DISTANCE,
     DEFAULT_MIN_HEADING,
+    DEFAULT_STILL_POINTS,
     DEFAULT_PORT,
     DEFAULT_TLS,
     DEFAULT_TLS_INSECURE,
@@ -91,6 +93,9 @@ def _timing_fields(d: dict) -> dict:
         vol.Required(
             CONF_MIN_HEADING, default=d.get(CONF_MIN_HEADING, DEFAULT_MIN_HEADING)
         ): _int_field(0, 180, "°"),
+        vol.Required(
+            CONF_STILL_POINTS, default=d.get(CONF_STILL_POINTS, DEFAULT_STILL_POINTS)
+        ): _int_field(0, 10, ""),
     }
 
 

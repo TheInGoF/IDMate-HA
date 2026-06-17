@@ -27,6 +27,7 @@ from .const import (
     DEFAULT_MAX_INTERVAL,
     DEFAULT_MIN_DISTANCE,
     DEFAULT_MIN_HEADING,
+    DEFAULT_STILL_POINTS,
     PROTO_VERSION,
 )
 
@@ -130,6 +131,7 @@ class IdmateTelemetry:
         self._max_interval = float(cfg.get("max_interval", DEFAULT_MAX_INTERVAL))
         self._min_distance = float(cfg.get("min_distance", DEFAULT_MIN_DISTANCE))
         self._min_heading = float(cfg.get("min_heading", DEFAULT_MIN_HEADING))
+        self._still_points = int(cfg.get("still_points", DEFAULT_STILL_POINTS))
 
         # Mutable state between ticks.
         self._last_sent = 0.0
@@ -138,6 +140,7 @@ class IdmateTelemetry:
         self._last_bearing: float | None = None
         self._last_charging: int | None = None
         self._was_active = False  # was moving/charging on the previous tick
+        self._still_count = 0  # standstill points already sent since last stop
 
     # ── lifecycle ────────────────────────────────────────────
     def start(self) -> None:
@@ -202,10 +205,16 @@ class IdmateTelemetry:
 
         if active:
             reason = self._decide(values, now, dist, bearing)
-        elif self._was_active:
-            # Just stopped: send one final point at the real parking spot
-            # (v=0, pk=1), so the track doesn't end ~50 m short while moving.
+            self._still_count = 0
+        elif self._was_active and self._still_points > 0:
+            # Just stopped: begin a short burst of standstill points (v=0) so the
+            # track ends at the real spot, not ~50 m short while still moving.
             reason = "parked"
+            self._still_count = 1
+        elif 0 < self._still_count < self._still_points:
+            # Continue the burst for a few ticks, then go silent (no parking spam).
+            reason = "parked"
+            self._still_count += 1
         else:
             reason = None  # parked and idle -> let the car sleep
 

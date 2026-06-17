@@ -24,10 +24,12 @@
           "interval": "Evaluation interval / minimum gap between sends (s)",
           "max_interval": "Heartbeat: max gap while active (s)",
           "min_distance": "Distance trigger (m)",
-          "min_heading": "Bearing-change trigger (°)"
+          "min_heading": "Bearing-change trigger (°)",
+          "still_points": "Standstill points after stopping"
         },
         "data_description": {
           "device": "Must match the vehicle id in IDMate (publishes to tele/.../data).",
+          "still_points": "How many 0 km/h points to send after the car stops (marks the real parking spot), then it goes silent. 0 = none.",
           "host": "The broker's LAN IP — it stays internal, no need to expose it to the internet.",
           "port": "1883 (plain) — IDMate's broker model. Only change it for a TLS broker.",
           "username": "Leave empty — IDMate's broker is anonymous; the AES key is the security.",
@@ -97,6 +99,7 @@
           "max_interval": "Heartbeat: max gap while active (s)",
           "min_distance": "Distance trigger (m)",
           "min_heading": "Bearing-change trigger (°)",
+          "still_points": "Standstill points after stopping",
           "import_interval": "Poll interval (s)"
         }
       }

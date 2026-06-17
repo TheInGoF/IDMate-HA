@@ -20,6 +20,7 @@ CONF_INTERVAL = "interval"  # evaluation tick / minimum interval between sends (
 CONF_MAX_INTERVAL = "max_interval"  # heartbeat: send at least this often while active (s)
 CONF_MIN_DISTANCE = "min_distance"  # send when moved at least this far (m)
 CONF_MIN_HEADING = "min_heading"  # send when bearing changed at least this much (deg)
+CONF_STILL_POINTS = "still_points"  # standstill points (v=0) to send after stopping
 
 # ── Telemetry: entity-mapping config keys ────────────────────
 CONF_SOC = "soc_entity"
@@ -47,6 +48,7 @@ DEFAULT_INTERVAL = 10        # evaluation tick / throttle floor (s)
 DEFAULT_MAX_INTERVAL = 60    # heartbeat while active (s)
 DEFAULT_MIN_DISTANCE = 100   # distance trigger (m) — mirrors the firmware
 DEFAULT_MIN_HEADING = 8      # bearing-change trigger (deg) — curve approximation
+DEFAULT_STILL_POINTS = 3     # standstill points (v=0) sent after stopping, then silence
 DEFAULT_TLS = False
 DEFAULT_TLS_INSECURE = True
 

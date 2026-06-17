@@ -24,10 +24,12 @@
           "interval": "Prüfintervall / Mindestabstand zwischen Sendungen (s)",
           "max_interval": "Heartbeat: max. Abstand während aktiv (s)",
           "min_distance": "Distanz-Trigger (m)",
-          "min_heading": "Kurswechsel-Trigger (°)"
+          "min_heading": "Kurswechsel-Trigger (°)",
+          "still_points": "Stillstandspunkte nach dem Halten"
         },
         "data_description": {
           "device": "Muss der Fahrzeug-ID in IDMate entsprechen (sendet an tele/.../data).",
+          "still_points": "Wie viele 0-km/h-Punkte nach dem Anhalten gesendet werden (markiert den echten Parkplatz), danach Funkstille. 0 = keine.",
           "host": "Die LAN-IP des Brokers — bleibt intern, keine Freigabe ins Internet nötig.",
           "port": "1883 (plain) — IDMate-Broker-Modell. Nur für einen TLS-Broker ändern.",
           "username": "Leer lassen — IDMates Broker ist anonym; die Sicherheit ist der AES-Key.",
@@ -97,6 +99,7 @@
           "max_interval": "Heartbeat: max. Abstand während aktiv (s)",
           "min_distance": "Distanz-Trigger (m)",
           "min_heading": "Kurswechsel-Trigger (°)",
+          "still_points": "Stillstandspunkte nach dem Halten",
           "import_interval": "Abfrageintervall (s)"
         }
       }
