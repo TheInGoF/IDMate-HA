@@ -52,6 +52,17 @@
           "ext_temp_entity": "Outside temperature",
           "heading_entity": "Heading",
           "charging_entity": "Charging (binary_sensor)"
+        },
+        "data_description": {
+          "soc_entity": "Required — battery level (%).",
+          "speed_entity": "Required — drives trip detection and how often data is sent.",
+          "location_entity": "GPS for the map. The distance and heading triggers are computed from it, and heading is sent automatically while driving.",
+          "odometer_entity": "Total mileage.",
+          "range_entity": "Estimated remaining range.",
+          "power_entity": "Current power (driving/charging).",
+          "ext_temp_entity": "Outside temperature.",
+          "heading_entity": "Optional override — leave empty to use the heading computed from GPS movement.",
+          "charging_entity": "Optional — usually not needed; charge sessions are tracked by a separate HA automation."
         }
       },
       "import_vehicles": {
