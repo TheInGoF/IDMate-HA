@@ -29,7 +29,6 @@ CONF_LOCATION = "location_entity"
 CONF_ODOMETER = "odometer_entity"
 CONF_RANGE = "range_entity"
 CONF_POWER = "power_entity"
-CONF_CHARGING = "charging_entity"
 CONF_EXT_TEMP = "ext_temp_entity"
 CONF_HEADING = "heading_entity"
 

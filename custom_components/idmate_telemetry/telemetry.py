@@ -138,8 +138,7 @@ class IdmateTelemetry:
         self._last_lat: float | None = None
         self._last_lon: float | None = None
         self._last_bearing: float | None = None
-        self._last_charging: int | None = None
-        self._was_active = False  # was moving/charging on the previous tick
+        self._was_active = False  # was moving on the previous tick
         self._still_count = 0  # standstill points already sent since last stop
 
     # ── lifecycle ────────────────────────────────────────────
@@ -193,7 +192,7 @@ class IdmateTelemetry:
             return
 
         now = time.time()
-        active = values.get("v", 0) > 0 or bool(values.get("c", 0))
+        active = values.get("v", 0) > 0  # moving; charging is tracked elsewhere
 
         # Distance + bearing relative to the last point we actually sent.
         dist = bearing = None
@@ -240,7 +239,6 @@ class IdmateTelemetry:
 
         # Advance state only on an actual send.
         self._last_sent = now
-        self._last_charging = values.get("c", 0)
         if lat is not None:
             self._last_lat = lat
             self._last_lon = lon
@@ -248,18 +246,13 @@ class IdmateTelemetry:
             self._last_bearing = bearing
 
     def _decide(self, values: dict, now: float, dist, bearing) -> str | None:
-        """Return the trigger reason, or None if no telegram should be sent."""
-        charging = values.get("c", 0)
-        # State transition (charging started/stopped) -> send immediately. Also
-        # covers the very first tick (last_charging is None).
-        if self._last_charging is None or charging != self._last_charging:
-            return "state"
-        # Heartbeat: never go silent longer than max_interval while active.
+        """Return the trigger reason, or None if no telegram should be sent.
+
+        Only called while moving (v > 0)."""
+        # Heartbeat: never go silent longer than max_interval while moving. Also
+        # fires the first point of a drive (last_sent is 0 or long ago).
         if (now - self._last_sent) >= self._max_interval:
             return "heartbeat"
-        # Parked while charging: heartbeat only (no distance/heading).
-        if values.get("v", 0) <= 0:
-            return None
         # Driving: distance trigger.
         if dist is not None and dist >= self._min_distance:
             return "distance"
@@ -307,18 +300,13 @@ class IdmateTelemetry:
         if speed_unit == "mph":
             speed *= _MILES_TO_KM
 
-        charging_st = self.hass.states.get(cfg.get("charging_entity") or "")
-        charging = bool(charging_st and charging_st.state == "on")
-
         # Note: parked-and-idle is NOT filtered here — tick() still needs the
-        # current (parked) position to send the final point once on stop.
+        # current (parked) position to send the standstill points once on stop.
 
         values: dict = {
             "s": soc,
             "v": speed,
             "pk": 1 if speed <= 0 else 0,
-            "c": 1 if charging else 0,
-            # dc omitted -> bit clear -> "no DC fast charging"
         }
 
         lat = self._num(cfg.get("location_entity"), attr="latitude")

@@ -72,7 +72,7 @@ In short: **broker IP + AES key** is all you normally enter.
 Entity mapping (SoC + speed required, rest optional):
 
 - State of charge (%), speed, location (`device_tracker`), odometer, remaining
-  range, power, charging (`binary_sensor`).
+  range, power, outside temperature. Each field has an inline hint explaining it.
 - Units for range / power / odometer are auto-detected from
   `unit_of_measurement` (`m`/`km`/`mi`, `W`/`kW`, `mph`).
 
@@ -85,14 +85,13 @@ when a trigger fires:
   sparse on the motorway.
 - **Heading** — bearing (computed from GPS) changed ≥ `min_heading` (default 8°):
   captures curves. The computed bearing is also sent as the `hd` field.
-- **Heartbeat** — at least every `max_interval` (default 60 s) while active.
-- **State change** — charging started/stopped: sent immediately.
+- **Heartbeat** — at least every `max_interval` (default 60 s) while moving.
 
-This sends nothing while parked-and-not-charging (the car may sleep), keeps the
-rate bounded by `interval`, and produces a much finer track than fixed-interval
-sampling without flooding InfluxDB. Tune all four thresholds in the config /
-options. Boolean fields (charging / parked / DC) follow the firmware convention:
-a set bit means *true*; *false* simply omits the field.
+When the car stops it sends `still_points` standstill points (default 3, `v=0`)
+to mark the real parking spot, then goes silent until it moves again. This keeps
+the rate bounded by `interval` and produces a much finer track than fixed-interval
+sampling without flooding InfluxDB. Charge tracking is handled separately by a
+Home Assistant automation, so there is no charging entity here.
 
 ### Import IDMate vehicles (HTTP)
 

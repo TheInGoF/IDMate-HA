@@ -50,8 +50,7 @@
           "range_entity": "Restreichweite",
           "power_entity": "Leistung",
           "ext_temp_entity": "Außentemperatur",
-          "heading_entity": "Fahrtrichtung (Heading)",
-          "charging_entity": "Lädt (binary_sensor)"
+          "heading_entity": "Fahrtrichtung (Heading)"
         },
         "data_description": {
           "soc_entity": "Pflicht — Ladezustand (%).",
@@ -61,8 +60,7 @@
           "range_entity": "Geschätzte Restreichweite.",
           "power_entity": "Aktuelle Leistung (Fahren/Laden).",
           "ext_temp_entity": "Außentemperatur.",
-          "heading_entity": "Optionaler Override — leer lassen, dann wird der Kurs aus der GPS-Bewegung berechnet.",
-          "charging_entity": "Optional — meist nicht nötig; Ladevorgänge erfasst eine separate HA-Automation."
+          "heading_entity": "Optionaler Override — leer lassen, dann wird der Kurs aus der GPS-Bewegung berechnet."
         }
       },
       "import_vehicles": {
@@ -105,7 +103,6 @@
           "power_entity": "Leistung",
           "ext_temp_entity": "Außentemperatur",
           "heading_entity": "Fahrtrichtung (Heading)",
-          "charging_entity": "Lädt (binary_sensor)",
           "interval": "Prüfintervall / Mindestabstand zwischen Sendungen (s)",
           "max_interval": "Heartbeat: max. Abstand während aktiv (s)",
           "min_distance": "Distanz-Trigger (m)",

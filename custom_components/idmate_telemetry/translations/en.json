@@ -50,8 +50,7 @@
           "range_entity": "Remaining range",
           "power_entity": "Power",
           "ext_temp_entity": "Outside temperature",
-          "heading_entity": "Heading",
-          "charging_entity": "Charging (binary_sensor)"
+          "heading_entity": "Heading"
         },
         "data_description": {
           "soc_entity": "Required — battery level (%).",
@@ -61,8 +60,7 @@
           "range_entity": "Estimated remaining range.",
           "power_entity": "Current power (driving/charging).",
           "ext_temp_entity": "Outside temperature.",
-          "heading_entity": "Optional override — leave empty to use the heading computed from GPS movement.",
-          "charging_entity": "Optional — usually not needed; charge sessions are tracked by a separate HA automation."
+          "heading_entity": "Optional override — leave empty to use the heading computed from GPS movement."
         }
       },
       "import_vehicles": {
@@ -105,7 +103,6 @@
           "power_entity": "Power",
           "ext_temp_entity": "Outside temperature",
           "heading_entity": "Heading",
-          "charging_entity": "Charging (binary_sensor)",
           "interval": "Evaluation interval / minimum gap between sends (s)",
           "max_interval": "Heartbeat: max gap while active (s)",
           "min_distance": "Distance trigger (m)",

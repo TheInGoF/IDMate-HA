@@ -19,7 +19,6 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
     CONF_AES_KEY,
-    CONF_CHARGING,
     CONF_DEVICE,
     CONF_EXT_TEMP,
     CONF_HEADING,
@@ -147,7 +146,6 @@ def _entities_schema(d: dict[str, Any]) -> vol.Schema:
     _opt(fields, CONF_POWER, _entity("sensor"), d)
     _opt(fields, CONF_EXT_TEMP, _entity("sensor"), d)
     _opt(fields, CONF_HEADING, _entity("sensor"), d)
-    _opt(fields, CONF_CHARGING, _entity("binary_sensor"), d)
     return vol.Schema(fields)
 
 
